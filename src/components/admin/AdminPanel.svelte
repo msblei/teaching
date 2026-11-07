@@ -5,6 +5,7 @@
   import { getLang, type Lang } from "../../lib/i18n";
 
   type Info = { valid: boolean; usage?: number; limit?: number | null; limitRemaining?: number | null; expiresAt?: string | null; accountRemaining?: number | null };
+  type Codes = { codes: string[]; source: "admin" | "env" | null };
   type Status = { active: false } | { active: true; masked: string; source: "admin" | "env"; savedAt: string | null; info: Info | null };
 
   const T = {
@@ -36,6 +37,16 @@
     badKey: { de: "OpenRouter kennt diesen Key nicht.", en: "OpenRouter does not accept this key." },
     unreachable: { de: "OpenRouter ist gerade nicht erreichbar.", en: "OpenRouter can't be reached right now." },
     error: { de: "Das hat nicht geklappt.", en: "That didn't work." },
+    codesTitle: { de: "Workshop-Codes", en: "Workshop codes" },
+    codesNone: { de: "Kein Code aktiv: niemand kommt in die App.", en: "No code active: nobody can use the app." },
+    codesFromEnv: { de: "aus der Env-Variable WORKSHOP_CODES", en: "from the env var WORKSHOP_CODES" },
+    codesHint: { de: "Mehrere mit Komma trennen. Kleinbuchstaben, Zahlen, Bindestrich.", en: "Separate several with commas. Lowercase letters, digits, hyphens." },
+    codesSave: { de: "Speichern", en: "Save" },
+    codesRemove: { de: "Codes entfernen", en: "Remove codes" },
+    codesBad: { de: "Ungültig: 3 bis 40 Zeichen, nur a-z, 0-9 und Bindestrich.", en: "Invalid: 3 to 40 characters, only a-z, 0-9 and hyphens." },
+    link: { de: "Link mit Code", en: "Link with code" },
+    copy: { de: "Kopieren", en: "Copy" },
+    copied: { de: "Kopiert", en: "Copied" },
   } as const;
 
   let lang = $state<Lang>(getLang());
@@ -47,6 +58,10 @@
 
   let view = $state<"loading" | "login" | "panel" | "off">("loading");
   let status = $state<Status | null>(null);
+  let codes = $state<Codes | null>(null);
+  let codesInput = $state("");
+  let codesError = $state<keyof typeof T | null>(null);
+  let copied = $state<string | null>(null);
   let password = $state("");
   let newKey = $state("");
   let busy = $state(false);
@@ -63,13 +78,18 @@
   }
 
   async function load() {
-    const { res, json } = await api("GET", "openrouter");
-    if (res.status === 404) view = "off";
-    else if (res.status === 401) view = "login";
-    else if (res.ok) {
-      status = json;
+    const [key, c] = await Promise.all([api("GET", "openrouter"), api("GET", "workshop-codes")]);
+    if (key.res.status === 404) view = "off";
+    else if (key.res.status === 401) view = "login";
+    else if (key.res.ok) {
+      status = key.json;
+      if (c.res.ok) setCodes(c.json);
       view = "panel";
     }
+  }
+  function setCodes(c: Codes) {
+    codes = c;
+    codesInput = c.codes.join(", ");
   }
   onMount(load);
 
@@ -116,6 +136,33 @@
       else if (res.status === 401) view = "login";
       else error = "error";
     });
+
+  const saveCodes = (e: Event) => {
+    e.preventDefault();
+    codesError = null;
+    run(async () => {
+      const { res, json } = await api("PUT", "workshop-codes", { codes: codesInput });
+      if (res.ok) setCodes(json);
+      else if (res.status === 401) view = "login";
+      else codesError = json.error === "invalid_codes" ? "codesBad" : "error";
+    });
+  };
+
+  const removeCodes = () =>
+    run(async () => {
+      const { res, json } = await api("DELETE", "workshop-codes");
+      if (res.ok) setCodes(json);
+      else if (res.status === 401) view = "login";
+    });
+
+  const linkFor = (c: string) => `${location.origin}/llm-to-agent?code=${encodeURIComponent(c)}`;
+  async function copy(c: string) {
+    try {
+      await navigator.clipboard.writeText(linkFor(c));
+      copied = c;
+      setTimeout(() => copied === c && (copied = null), 1500);
+    } catch {}
+  }
 
   const logout = () =>
     run(async () => {
@@ -190,6 +237,41 @@
     {/if}
     {#if error}<p class="mt-3 text-sm text-danger">{T[error][lang]}</p>{/if}
   </section>
+
+  {#if codes}
+    <section class="mt-6 rounded-xl border border-line bg-surface p-5">
+      <h2 class="text-xl text-strong">{T.codesTitle[lang]}</h2>
+      {#if codes.codes.length}
+        <p class="mt-1 text-sm opacity-70">{codes.source === "env" ? T.codesFromEnv[lang] : T.fromAdmin[lang]}</p>
+        <ul class="mt-3 flex flex-col gap-1.5">
+          {#each codes.codes as c}
+            <li class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+              <code class="font-mono text-strong">{c}</code>
+              <span class="min-w-0 flex-1 truncate font-mono text-xs opacity-60">{linkFor(c)}</span>
+              <button type="button" onclick={() => copy(c)} class="text-xs opacity-70 hover:underline hover:opacity-100">{copied === c ? T.copied[lang] : T.copy[lang]}</button>
+            </li>
+          {/each}
+        </ul>
+      {:else}
+        <p class="mt-3 flex items-center gap-2">
+          <span class="h-2.5 w-2.5 rounded-full bg-line"></span>
+          <span class="text-strong">{T.codesNone[lang]}</span>
+        </p>
+      {/if}
+
+      <form onsubmit={saveCodes} class="mt-5 flex flex-col gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <input bind:value={codesInput} placeholder="zurich26, demo" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label={T.codesTitle[lang]} class={`${input} font-mono text-sm`} />
+          <button type="submit" disabled={busy || !codesInput.trim()} class={`${btn} shrink-0 bg-accent text-accent-fg hover:brightness-110`}>{T.codesSave[lang]}</button>
+        </div>
+        <p class="text-xs opacity-60">{T.codesHint[lang]}</p>
+      </form>
+      {#if codes.source === "admin"}
+        <button type="button" onclick={removeCodes} disabled={busy} class={`${btn} mt-4 border border-line hover:border-danger hover:text-danger`}>{T.codesRemove[lang]}</button>
+      {/if}
+      {#if codesError}<p class="mt-3 text-sm text-danger">{T[codesError][lang]}</p>{/if}
+    </section>
+  {/if}
 
   <button type="button" onclick={logout} class="mt-6 text-sm opacity-60 hover:underline hover:opacity-100">{T.logout[lang]}</button>
 {/if}

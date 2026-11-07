@@ -241,7 +241,7 @@
 {/snippet}
 
 <div class="flex h-dvh flex-col">
-  <Header {lang} {theme} bind:view busy={chat.busy} {reached} onjump={jump} onnewchat={newConversation} />
+  <Header {lang} {theme} bind:view busy={chat.busy} {reached} locked={!hasCode} onjump={jump} onnewchat={newConversation} />
 
   {#if !hasCode}
     <main class="flex flex-1 items-center justify-center px-4">

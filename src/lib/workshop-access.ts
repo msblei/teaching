@@ -1,29 +1,40 @@
 import { getStore } from "@netlify/blobs";
 import { getSecret } from "astro:env/server";
+import { getStoredSecret } from "./admin";
 
-// Shared guard for dynamic workshop apps: a code shown on the slide
-// (WORKSHOP_CODES, comma-separated) plus a per-code hourly call cap.
+// Shared guard for dynamic workshop apps: a code shown on the slide plus a
+// per-code hourly call cap. Codes set on /admin win; the WORKSHOP_CODES env
+// var (comma-separated) is the fallback.
 
 export const CODE_HEADER = "x-workshop-code";
 const DEFAULT_HOURLY_CAP = 3000; // whole room, all calls; tune per workshop
 
 const memory = new Map<string, number>();
 
-function validCodes(): string[] {
-  return (getSecret("WORKSHOP_CODES") ?? "")
-    .split(",")
+export const CODES_SECRET = "workshop-codes";
+
+export const parseCodes = (raw: string) =>
+  raw
+    .split(/[\s,;]+/)
     .map((c) => c.trim().toLowerCase())
     .filter(Boolean);
+
+/** The active codes and where they come from. */
+export async function workshopCodes(): Promise<{ codes: string[]; source: "admin" | "env" | null }> {
+  const stored = await getStoredSecret(CODES_SECRET);
+  if (stored?.value) return { codes: parseCodes(stored.value), source: "admin" };
+  const env = parseCodes(getSecret("WORKSHOP_CODES") ?? "");
+  return { codes: env, source: env.length ? "env" : null };
 }
 
-export function isValidCode(code: string | null): boolean {
-  return !!code && validCodes().includes(code.trim().toLowerCase());
+export async function isValidCode(code: string | null): Promise<boolean> {
+  return !!code && (await workshopCodes()).codes.includes(code.trim().toLowerCase());
 }
 
 /** Returns a Response to send back if the request is not allowed, else null. */
 export async function guard(request: Request, app: string): Promise<Response | null> {
   const code = request.headers.get(CODE_HEADER);
-  if (!isValidCode(code)) return Response.json({ error: "invalid_code" }, { status: 401 });
+  if (!(await isValidCode(code))) return Response.json({ error: "invalid_code" }, { status: 401 });
 
   const cap = Number(getSecret("WORKSHOP_HOURLY_CAP")) || DEFAULT_HOURLY_CAP;
   const key = `${app}:${code!.trim().toLowerCase()}:${new Date().toISOString().slice(0, 13)}`;

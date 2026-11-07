@@ -25,8 +25,11 @@ pnpm build
 
 ## Admin (`/admin`, not linked)
 
-Set `ADMIN_PASSWORD` in Netlify, then open `/admin` to paste, check or remove
-the OpenRouter key. It is checked against OpenRouter, stored in Netlify Blobs
+Set `ADMIN_PASSWORD` in Netlify, then open `/admin` to set the workshop codes
+(with a ready link per code, `?code=...`) and to paste, check or remove the
+OpenRouter key. Codes set there win over `WORKSHOP_CODES`; without any valid
+code the app shows only the code screen and its toolbar is locked.
+For the key: it is checked against OpenRouter, stored in Netlify Blobs
 and live at once (no redeploy). The page shows the masked key, the credit
 left on the key and the account, and when the key expires. Without a key,
 participants get "No API key active yet. Please wait for your instructor."

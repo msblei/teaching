@@ -12,6 +12,7 @@
     view = $bindable(),
     busy,
     reached,
+    locked = false,
     onjump,
     onnewchat,
   }: {
@@ -21,6 +22,8 @@
     busy: boolean;
     /** Which of the three agent parts are in use: model, tools, instructions. */
     reached: [boolean, boolean, boolean];
+    /** No workshop code yet: the toolbar is shown but can't be used. */
+    locked?: boolean;
     onjump: (step: 1 | 2 | 3) => void;
     onnewchat: () => void;
   } = $props();
@@ -40,7 +43,7 @@
 </header>
 
 <!-- The app's own toolbar, below the site header. -->
-<div class="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pb-2">
+<div inert={locked} aria-disabled={locked} class={`grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pb-2 transition-opacity ${locked ? "pointer-events-none select-none opacity-30" : ""}`}>
   <!-- What participants normally see, or what really happens. -->
   <div class="flex justify-self-start rounded-full border border-line p-0.5 text-sm" role="tablist">
     {#each [["chat", S.viewChat], ["trace", S.viewTrace]] as const as [v, label]}
