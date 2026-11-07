@@ -1,0 +1,29 @@
+{
+  "name": "teaching",
+  "description": "Workshop tools by Marius Bleif, teach.mariusbleif.com",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/netlify": "^8.2.0",
+    "@astrojs/svelte": "^9.1.0",
+    "@netlify/blobs": "^11.1.7",
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^7.4.0",
+    "svelte": "^5.57.0",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/node": "^24.19.2",
+    "svelte-check": "^4.7.8",
+    "typescript": "^5.9.0"
+  }
+}

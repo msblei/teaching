@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Code brackets with a spark: coding with an AI assistant. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <g stroke="#23201b" stroke-width="56" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M380 340 L220 512 L380 684"/>
+    <path d="M644 340 L804 512 L644 684"/>
+    <path d="M560 300 L464 724"/>
+  </g>
+  <path d="M760 190 l22 52 52 22 -52 22 -22 52 -22 -52 -52 -22 52 -22z" fill="#ffb860" stroke="#23201b" stroke-width="16" stroke-linejoin="round"/>
+</svg>

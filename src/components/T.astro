@@ -1,0 +1,10 @@
+---
+// Bilingual inline text. The inactive language is hidden by global.css.
+interface Props {
+  de: string;
+  en: string;
+}
+const { de, en } = Astro.props;
+---
+
+<span data-l="de">{de}</span><span data-l="en">{en}</span>

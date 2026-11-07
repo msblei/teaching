@@ -1,0 +1,12 @@
+---
+import Base from "../../layouts/Base.astro";
+import App from "../../apps/llm-to-agent/ui/App.svelte";
+---
+
+<Base
+  title="From LLM to Agent | Marius Bleif"
+  description="A 20-minute workshop: model, tools, instructions. Watch a chatbot become an agent."
+  app
+>
+  <App client:only="svelte" />
+</Base>

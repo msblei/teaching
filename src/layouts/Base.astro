@@ -1,0 +1,51 @@
+---
+import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { initLangScript } from "../lib/i18n";
+import { initThemeScript } from "../lib/theme";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Full-screen app: no site header/footer, the app draws its own chrome. */
+  app?: boolean;
+  /** Keep the page out of search engines (e.g. /admin). */
+  noindex?: boolean;
+}
+const { title, description, app = false, noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content" />
+    <script is:inline set:html={initLangScript + initThemeScript} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/latex.css" />
+    <link rel="canonical" href={Astro.url} />
+    <meta name="author" content="Marius Bleif" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={Astro.url} />
+  </head>
+  {
+    app ? (
+      <body class="h-dvh overflow-hidden">
+        <slot />
+      </body>
+    ) : (
+      <body class="min-h-dvh flex flex-col">
+        <SiteHeader />
+        <main class="flex-grow w-full max-w-[720px] mx-auto px-6 py-10 md:py-14">
+          <slot />
+        </main>
+        <SiteFooter />
+      </body>
+    )
+  }
+</html>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Three components (model, tools, instructions) joined into one agent. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <g stroke="#23201b" stroke-width="44" stroke-linecap="round" fill="none">
+    <path d="M512 300 L300 690 M512 300 L724 690 M300 690 L724 690"/>
+  </g>
+  <circle cx="512" cy="300" r="104" fill="#23201b"/>
+  <circle cx="300" cy="690" r="84" fill="#f6f0e4" stroke="#23201b" stroke-width="44"/>
+  <circle cx="724" cy="690" r="84" fill="#ffb860" stroke="#23201b" stroke-width="44"/>
+</svg>

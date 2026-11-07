@@ -1,0 +1,56 @@
+---
+import Base from "../../layouts/Base.astro";
+import T from "../../components/T.astro";
+
+// The workshop itself lives in github.com/msblei/AI_coding_workshop.
+// Its self-hosted IDE fleet only runs during sessions, so this page is the
+// stable link and shows "Join" only while the fleet answers.
+const FLEET = "https://ai-coding-workshop.mariusbleif.com";
+const CODESPACES = "https://codespaces.new/msblei/AI_coding_workshop?quickstart=1";
+const SOURCE = "https://github.com/msblei/AI_coding_workshop";
+---
+
+<Base
+  title="AI Coding Workshop | Marius Bleif"
+  description="Hands-on workshop: build an app with an AI coding assistant, first by vibe coding, then spec-driven."
+>
+  <img src="/icons/ai-coding-workshop.svg" alt="" width="56" height="56" />
+  <h1 class="mt-6 text-4xl md:text-5xl tracking-tight">AI Coding Workshop</h1>
+  <p class="mt-4 text-xl opacity-70">
+    <T
+      de="Mit einem KI-Assistenten im Browser eine kleine App bauen: erst frei drauflos, dann mit Plan."
+      en="Build a small app with an AI coding assistant in the browser: first vibe coding, then with a plan."
+    />
+  </p>
+
+  <div class="mt-12 min-h-[3.5rem]" aria-live="polite">
+    <a
+      id="join"
+      href={FLEET}
+      hidden
+      class="inline-block rounded-lg bg-accent px-6 py-3 text-lg text-accent-fg hover:brightness-110 transition"
+    >
+      <T de="Session beitreten" en="Join session" />
+    </a>
+    <p id="offline" hidden class="opacity-50">
+      <T de="Gerade läuft keine Session." en="No session is running right now." />
+    </p>
+  </div>
+
+  <p class="mt-10 text-sm opacity-50 flex gap-6">
+    <a href={CODESPACES} target="_blank" rel="noopener" class="hover:opacity-100 underline-offset-4 hover:underline">
+      <T de="Alternative: GitHub Codespaces" en="Alternative: GitHub Codespaces" />
+    </a>
+    <a href={SOURCE} target="_blank" rel="noopener" class="hover:opacity-100 underline-offset-4 hover:underline">
+      <T de="Quellcode" en="Source" />
+    </a>
+  </p>
+</Base>
+
+<script define:vars={{ FLEET }}>
+  // An opaque no-cors request resolves if the fleet answers at all and
+  // rejects if the VM is off, so the claim server needs no CORS headers.
+  fetch(FLEET, { mode: "no-cors", cache: "no-store", signal: AbortSignal.timeout(5000) })
+    .then(() => (document.getElementById("join").hidden = false))
+    .catch(() => (document.getElementById("offline").hidden = false));
+</script>

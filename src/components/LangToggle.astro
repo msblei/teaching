@@ -1,0 +1,73 @@
+---
+// Language dropdown for static pages, same look as the one in the apps.
+// The current code ("DE"/"EN") and the check mark follow <html data-lang>
+// through CSS, so the page needs no re-render.
+const LANGS = [
+  { key: "de", name: "Deutsch" },
+  { key: "en", name: "English" },
+];
+---
+
+<div class="lang-picker relative" data-lang-picker>
+  <button
+    type="button"
+    data-lang-trigger
+    aria-haspopup="menu"
+    aria-expanded="false"
+    aria-label="Language"
+    class="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm opacity-70 transition hover:bg-surface-2 hover:opacity-100"
+  >
+    <span data-l="de">DE</span><span data-l="en">EN</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="opacity-60" aria-hidden="true">
+      <path d="M6 9l6 6 6-6"></path>
+    </svg>
+  </button>
+
+  <div data-lang-menu hidden class="absolute right-0 top-full z-30 mt-1 w-44 rounded-2xl border border-line bg-surface p-1.5 shadow-xl" role="menu">
+    {
+      LANGS.map((l) => (
+        <button type="button" role="menuitemradio" data-set-lang={l.key} class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-surface-2">
+          <span class="flex-1 text-strong">{l.name}</span>
+          <svg class={`check check-${l.key} text-accent`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12.5l4.5 4.5L19 7.5"></path>
+          </svg>
+        </button>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .check {
+    visibility: hidden;
+  }
+  :global(html[data-lang="de"]) .check-de,
+  :global(html[data-lang="en"]) .check-en {
+    visibility: visible;
+  }
+</style>
+
+<script>
+  import { setLang, type Lang } from "../lib/i18n";
+
+  for (const picker of document.querySelectorAll<HTMLElement>("[data-lang-picker]")) {
+    const trigger = picker.querySelector<HTMLButtonElement>("[data-lang-trigger]")!;
+    const menu = picker.querySelector<HTMLElement>("[data-lang-menu]")!;
+    const show = (on: boolean) => {
+      menu.hidden = !on;
+      trigger.setAttribute("aria-expanded", String(on));
+    };
+
+    trigger.addEventListener("click", () => show(menu.hidden));
+    for (const b of menu.querySelectorAll<HTMLButtonElement>("[data-set-lang]")) {
+      b.addEventListener("click", () => {
+        setLang(b.dataset.setLang as Lang);
+        show(false);
+      });
+    }
+    document.addEventListener("click", (e) => {
+      if (!menu.hidden && !picker.contains(e.target as Node)) show(false);
+    });
+    document.addEventListener("keydown", (e) => e.key === "Escape" && show(false));
+  }
+</script>

@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+/* Colors as tokens, switched by <html data-theme>. Dark is the
+   mariusbleif.com look; light uses the cream of the icon tiles.
+   Font: Latin Modern serif (public/latex.css), as on mariusbleif.com. */
+:root,
+:root[data-theme="dark"] {
+  --bg: #1d232a;
+  --fg: #a6adbb;
+  --strong: #dfe3ea;
+  --surface: #232a32;
+  --surface-2: #2c343e;
+  --line: rgb(255 255 255 / 0.1);
+  --accent: #ffb860;
+  --accent-fg: #1d232a;
+  --danger: #f2a7a0;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f0e4;
+  --fg: #4a443a;
+  --strong: #23201b;
+  --surface: #fbf7ef;
+  --surface-2: #ebe2d1;
+  --line: rgb(35 32 27 / 0.13);
+  --accent: #b9620f;
+  --accent-fg: #fffaf0;
+  --danger: #a3362c;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-strong: var(--strong);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-danger: var(--danger);
+}
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Latin Modern Roman", serif;
+}
+
+/* Bilingual text: both languages are rendered, the inactive one is hidden.
+   <html data-lang> is set before first paint by the script in Base.astro. */
+html[data-lang="de"] [data-l="en"],
+html[data-lang="en"] [data-l="de"] {
+  display: none !important;
+}
