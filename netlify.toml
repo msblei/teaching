@@ -1,3 +1,7 @@
 [build]
   command = "pnpm build"
   publish = "dist"
+
+# Astro 7 needs Node >= 22.23.4; Netlify's default is older.
+[build.environment]
+  NODE_VERSION = "24"
