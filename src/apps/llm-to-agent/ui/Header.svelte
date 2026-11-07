@@ -30,7 +30,7 @@
 
 <!-- The site-wide header, same as on every other page. -->
 <header class={HEADER_CLASS}>
-  <a href="/" class={BRAND_CLASS}>teach</a>
+  <a href="/" class={BRAND_CLASS}>teaching</a>
   <div class="ml-auto flex items-center gap-1">
     <LangPicker {lang} />
     <button type="button" onclick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={S.theme[lang]} title={S.theme[lang]} class={ICON_BTN_CLASS}>

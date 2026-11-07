@@ -7,7 +7,7 @@ const TIMEOUT_MS = 9_000;
 export class SourceUnavailable extends Error {}
 
 /** Says who we are, so site operators can see what the traffic is. */
-export const WORKSHOP_UA = "Mozilla/5.0 (compatible; teach.mariusbleif.com workshop app; +https://teach.mariusbleif.com)";
+export const WORKSHOP_UA = "Mozilla/5.0 (compatible; teaching.mariusbleif.com workshop app; +https://teaching.mariusbleif.com)";
 
 export async function fetchPage(url: string): Promise<string> {
   const res = await fetch(url, {

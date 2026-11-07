@@ -1,4 +1,4 @@
-# teach.mariusbleif.com
+# teaching.mariusbleif.com
 
 Workshop tools by Marius Bleif. One Astro project for all of them: static
 visualizers are prerendered, dynamic apps add server endpoints that run as
@@ -50,7 +50,7 @@ request, so participants can watch model, tool, model happen.
   diagram: Model | App | Tools, with every request, answer and tool call.
 
 **Data sources.** tutti.ch and toppreise.ch are read directly from their
-normal pages, with an honest user agent (`teach.mariusbleif.com workshop app`).
+normal pages, with an honest user agent (`teaching.mariusbleif.com workshop app`).
 tutti's robots.txt allows search (`/de/q/`) and listing pages (`/de/vi/`); its
 `/api/` is off limits and not used. Tested 2026-11-07: 10 parallel searches in
 0.3 to 0.5 s each. Results are cached and shared by everyone

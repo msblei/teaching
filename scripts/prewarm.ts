@@ -2,7 +2,7 @@
 // participants gets instant answers. Optional with tutti.ch (which handles
 // parallel requests fine), but it also catches a blocked server early.
 //
-//   node scripts/prewarm.ts https://teach.mariusbleif.com <workshop-code>
+//   node scripts/prewarm.ts https://teaching.mariusbleif.com <workshop-code>
 //
 // Searches the mission defaults (DE and EN wording), reads the top listings
 // of each search, and checks the new prices. Run it about 10 minutes before

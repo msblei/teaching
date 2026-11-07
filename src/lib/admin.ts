@@ -12,7 +12,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 // site-scoped Netlify Blobs store "admin"; in plain `astro dev` an
 // in-memory map stands in.
 
-const COOKIE = "teach_admin";
+const COOKIE = "teaching_admin";
 const SESSION_S = 12 * 3600;
 const MAX_FAILS_PER_HOUR = 10;
 

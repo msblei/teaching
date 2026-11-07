@@ -98,7 +98,7 @@ export async function openStep(params: { model: ModelKey; messages: ChatMessage[
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://teach.mariusbleif.com",
+        "HTTP-Referer": "https://teaching.mariusbleif.com",
         "X-Title": "From LLM to Agent",
       },
       body: JSON.stringify(requestBody(params)),

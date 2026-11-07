@@ -6,7 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 // Pages are prerendered (static) by default. A dynamic app opts in per route
 // with `export const prerender = false`, which runs it as a Netlify Function.
 export default defineConfig({
-  site: "https://teach.mariusbleif.com",
+  site: "https://teaching.mariusbleif.com",
   output: "static",
   // No edge functions here; skip their Deno emulation in dev.
   adapter: netlify({ devFeatures: { environmentVariables: false, images: true, edgeFunctions: false } }),
