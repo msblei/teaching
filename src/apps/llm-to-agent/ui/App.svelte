@@ -44,9 +44,9 @@
     } catch {}
   });
 
-  // Workshop code gate (?code= in the link works too).
-  let hasCode = $state(false);
-  let codeChecked = $state(false);
+  // Access gate, set per page on /admin: public pages open at once, otherwise
+  // a workshop code (?code= in the link works too), or a note if the page is off.
+  let gate = $state<"checking" | "open" | "code" | "off">("checking");
   let codeInput = $state("");
   let codeWrong = $state(false);
   onMount(async () => {
@@ -55,20 +55,22 @@
       saved = localStorage.getItem(CODE_KEY) ?? "";
     } catch {}
     const candidate = new URLSearchParams(location.search).get("code") || saved;
-    if (candidate && (await checkCode(candidate))) saveCode(candidate);
-    codeChecked = true;
+    const state = await checkCode(candidate);
+    if (state === "open" && candidate) saveCode(candidate);
+    gate = state;
   });
   function saveCode(c: string) {
     try {
       localStorage.setItem(CODE_KEY, c);
     } catch {}
-    hasCode = true;
   }
   async function submitCode(e: Event) {
     e.preventDefault();
     codeWrong = false;
-    if (await checkCode(codeInput.trim())) saveCode(codeInput.trim());
-    else codeWrong = true;
+    const state = await checkCode(codeInput.trim());
+    if (state === "open") saveCode(codeInput.trim());
+    else codeWrong = state === "code";
+    gate = state;
   }
 
   // Conversation and onboarding state
@@ -147,7 +149,7 @@
         try {
           localStorage.removeItem(CODE_KEY);
         } catch {}
-        hasCode = false;
+        gate = err.code === "off" ? "off" : "code";
         return;
       }
     }
@@ -241,11 +243,13 @@
 {/snippet}
 
 <div class="flex h-dvh flex-col">
-  <Header {lang} {theme} bind:view busy={chat.busy} {reached} locked={!hasCode} onjump={jump} onnewchat={newConversation} />
+  <Header {lang} {theme} bind:view busy={chat.busy} {reached} locked={gate !== "open"} onjump={jump} onnewchat={newConversation} />
 
-  {#if !hasCode}
+  {#if gate !== "open"}
     <main class="flex flex-1 items-center justify-center px-4">
-      {#if codeChecked}
+      {#if gate === "off"}
+        <p class="text-center text-xl opacity-70">{S.codeOff[lang]}</p>
+      {:else if gate === "code"}
         <form onsubmit={submitCode} class="w-full max-w-sm">
           <label for="code" class="mb-3 block text-center text-2xl text-strong">{S.codeTitle[lang]}</label>
           <div class="flex gap-2 rounded-full border border-line bg-surface p-1.5 focus-within:border-accent/50">
@@ -294,7 +298,7 @@
 
 {#if levelUp}
   <LevelUp level={levelUp} {lang} ondone={levelDone} />
-{:else if spot && hasCode}
+{:else if spot && gate === "open"}
   <Spotlight target={spot.target} hint={spot.hint} {lang} onskip={() => (tour = null)} />
 {/if}
 

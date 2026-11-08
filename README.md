@@ -8,7 +8,7 @@ Netlify Functions.
 
 ```bash
 pnpm install
-cp .env.example .env   # set WORKSHOP_CODES, OPENROUTER_API_KEY, ADMIN_PASSWORD
+cp .env.example .env   # set OPENROUTER_API_KEY, ADMIN_PASSWORD
 pnpm dev
 pnpm build
 ```
@@ -20,15 +20,20 @@ pnpm build
 - `src/pages/api/<slug>/`: server endpoints of dynamic tools (`prerender = false`)
 - `src/apps/<slug>/`: each tool's code (UI, shared, server), self-contained
 - `src/lib/i18n.ts`: DE/EN (both rendered, one hidden; islands listen for `langchange`)
-- `src/lib/workshop-access.ts`: workshop code check and hourly call cap for dynamic tools
+- `src/lib/workshop-access.ts`: per-page access (`guard` for API calls, `pageGate` for pages) and hourly call cap
 - `src/lib/admin.ts`, `src/lib/openrouter.ts`: the hidden admin page's login and stored secrets
 
 ## Admin (`/admin`, not linked)
 
-Set `ADMIN_PASSWORD` in Netlify, then open `/admin` to set the workshop codes
-(with a ready link per code, `?code=...`) and to paste, check or remove the
-OpenRouter key. Codes set there win over `WORKSHOP_CODES`; without any valid
-code the app shows only the code screen and its toolbar is locked.
+Set `ADMIN_PASSWORD` in Netlify, then open `/admin` to set who may use each
+workshop page and to paste, check or remove the OpenRouter key.
+
+Each page in `src/data/apps.ts` is **Off**, **Code** (its own codes, with a
+ready link per code, `?code=...`) or **Public** (no code). Changes apply at
+once. A page nobody has set yet is off; in local dev it is public. A new page
+needs either `guard()` on its API routes or `pageGate()` in its frontmatter
+(with `prerender = false`), because a prerendered page can't be locked.
+
 For the key: it is checked against OpenRouter, stored in Netlify Blobs
 and live at once (no redeploy). The page shows the masked key, the credit
 left on the key and the account, and when the key expires. Without a key,
@@ -45,7 +50,7 @@ Netlify so removing the key really switches the apps off.
 instructions as mission cards. The browser runs the agent loop one step per
 request, so participants can watch model, tool, model happen.
 
-- Participants need the workshop code (`?code=` in the link works too).
+- Access is set on `/admin`; with a code, `?code=` in the link works too.
 - Models run through OpenRouter. A Claude | GPT picker swaps the model at any stage
   (defaults `anthropic/claude-haiku-5.5` and `openai/gpt-6-luna`, same price tier;
   override with `LLM_TO_AGENT_CLAUDE_MODEL` / `LLM_TO_AGENT_GPT_MODEL`).

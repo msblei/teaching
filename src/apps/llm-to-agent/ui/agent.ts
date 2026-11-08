@@ -62,7 +62,12 @@ async function post<T>(path: string, body: unknown, c = workshopCode()): Promise
   return json as T;
 }
 
-export const checkCode = (c: string) => post<{ ok: true }>("access", {}, c).then(() => true, () => false);
+/** Whether this code opens the page; with an empty code, whether the page is public. */
+export const checkCode = (c: string): Promise<"open" | "code" | "off"> =>
+  post<{ ok: true }>("access", {}, c).then(
+    () => "open" as const,
+    (err) => (err instanceof ApiError && err.code === "off" ? "off" : "code"),
+  );
 
 type Assistant = Extract<ChatMessage, { role: "assistant" }>;
 

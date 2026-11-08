@@ -1,11 +1,14 @@
 <script lang="ts">
   // Hidden admin page: log in with ADMIN_PASSWORD, then set, check or
-  // remove the OpenRouter key. The server only ever returns a masked key.
+  // remove the OpenRouter key (the server only ever returns a masked key)
+  // and choose who may use each workshop page.
   import { onMount } from "svelte";
   import { getLang, type Lang } from "../../lib/i18n";
+  import { apps } from "../../data/apps";
 
   type Info = { valid: boolean; usage?: number; limit?: number | null; limitRemaining?: number | null; expiresAt?: string | null; accountRemaining?: number | null };
-  type Codes = { codes: string[]; source: "admin" | "env" | null; envCodes: boolean };
+  type Mode = "off" | "code" | "public";
+  type Pages = Record<string, { mode: Mode; codes: string[] }>;
   type Status = { active: false } | { active: true; masked: string; source: "admin" | "env"; savedAt: string | null; info: Info | null };
 
   const T = {
@@ -37,16 +40,14 @@
     badKey: { de: "OpenRouter kennt diesen Key nicht.", en: "OpenRouter does not accept this key." },
     unreachable: { de: "OpenRouter ist gerade nicht erreichbar.", en: "OpenRouter can't be reached right now." },
     error: { de: "Das hat nicht geklappt.", en: "That didn't work." },
-    codesTitle: { de: "Workshop-Codes", en: "Workshop codes" },
-    codesNone: { de: "Kein Code aktiv: niemand kommt in die App.", en: "No code active: nobody can use the app." },
-    codesFromEnv: { de: "aus der Env-Variable WORKSHOP_CODES", en: "from the env var WORKSHOP_CODES" },
+    pagesTitle: { de: "Workshops", en: "Workshops" },
+    off: { de: "Aus", en: "Off" },
+    code: { de: "Code", en: "Code" },
+    public: { de: "Öffentlich", en: "Public" },
+    publicCost: { de: "Ohne Code für alle offen: Jede Nachricht kostet OpenRouter-Guthaben.", en: "Open to everyone without a code: every message costs OpenRouter credit." },
     codesHint: { de: "Mehrere mit Komma trennen. Kleinbuchstaben, Zahlen, Bindestrich.", en: "Separate several with commas. Lowercase letters, digits, hyphens." },
     codesSave: { de: "Speichern", en: "Save" },
-    codesRemove: { de: "Alle Codes entfernen", en: "Remove all codes" },
-    codesRemoveHint: { de: "Sperrt die App, auch wenn in Netlify WORKSHOP_CODES gesetzt ist.", en: "Locks the app, even if WORKSHOP_CODES is set in Netlify." },
-    codesReset: { de: "Codes aus Netlify wieder verwenden", en: "Use the Netlify codes again" },
     codesBad: { de: "Ungültig: 3 bis 40 Zeichen, nur a-z, 0-9 und Bindestrich.", en: "Invalid: 3 to 40 characters, only a-z, 0-9 and hyphens." },
-    link: { de: "Link mit Code", en: "Link with code" },
     copy: { de: "Kopieren", en: "Copy" },
     copied: { de: "Kopiert", en: "Copied" },
   } as const;
@@ -60,9 +61,11 @@
 
   let view = $state<"loading" | "login" | "panel" | "off">("loading");
   let status = $state<Status | null>(null);
-  let codes = $state<Codes | null>(null);
-  let codesInput = $state("");
-  let codesError = $state<keyof typeof T | null>(null);
+  let pages = $state<Pages | null>(null);
+  let drafts = $state<Record<string, string>>({});
+  // A page switched to Code that has no codes yet: nothing is saved until it has one.
+  let addingCode = $state<Record<string, boolean>>({});
+  let pageError = $state<{ slug: string; text: keyof typeof T } | null>(null);
   let copied = $state<string | null>(null);
   let password = $state("");
   let newKey = $state("");
@@ -80,18 +83,18 @@
   }
 
   async function load() {
-    const [key, c] = await Promise.all([api("GET", "openrouter"), api("GET", "workshop-codes")]);
+    const [key, c] = await Promise.all([api("GET", "openrouter"), api("GET", "access")]);
     if (key.res.status === 404) view = "off";
     else if (key.res.status === 401) view = "login";
     else if (key.res.ok) {
       status = key.json;
-      if (c.res.ok) setCodes(c.json);
+      if (c.res.ok) setPages(c.json.pages);
       view = "panel";
     }
   }
-  function setCodes(c: Codes) {
-    codes = c;
-    codesInput = c.codes.join(", ");
+  function setPages(p: Pages) {
+    pages = p;
+    drafts = Object.fromEntries(Object.entries(p).map(([slug, a]) => [slug, a.codes.join(", ")]));
   }
   onMount(load);
 
@@ -139,30 +142,37 @@
       else error = "error";
     });
 
-  const saveCodes = (e: Event) => {
-    e.preventDefault();
-    codesError = null;
+  const putAccess = (slug: string, mode: Mode, codes?: string) =>
     run(async () => {
-      const { res, json } = await api("PUT", "workshop-codes", { codes: codesInput });
-      if (res.ok) setCodes(json);
-      else if (res.status === 401) view = "login";
-      else codesError = json.error === "invalid_codes" ? "codesBad" : "error";
+      pageError = null;
+      const { res, json } = await api("PUT", "access", { slug, mode, codes });
+      if (res.ok) {
+        addingCode[slug] = false;
+        setPages(json.pages);
+      } else if (res.status === 401) view = "login";
+      else pageError = { slug, text: json.error === "invalid_codes" ? "codesBad" : "error" };
     });
+
+  const shownMode = (slug: string): Mode => (addingCode[slug] ? "code" : (pages?.[slug].mode ?? "off"));
+
+  function choose(slug: string, mode: Mode) {
+    pageError = null;
+    if (mode === "code" && !pages?.[slug].codes.length) addingCode[slug] = true;
+    else putAccess(slug, mode);
+  }
+
+  const saveCodes = (e: Event, slug: string) => {
+    e.preventDefault();
+    putAccess(slug, "code", drafts[slug]);
   };
 
-  const removeCodes = (reset = false) =>
-    run(async () => {
-      const { res, json } = await api("DELETE", reset ? "workshop-codes?reset=1" : "workshop-codes");
-      if (res.ok) setCodes(json);
-      else if (res.status === 401) view = "login";
-    });
-
-  const linkFor = (c: string) => `${location.origin}/llm-to-agent?code=${encodeURIComponent(c)}`;
-  async function copy(c: string) {
+  const linkFor = (slug: string, c: string) => `${location.origin}/${slug}?code=${encodeURIComponent(c)}`;
+  async function copy(slug: string, c: string) {
+    const id = `${slug}:${c}`;
     try {
-      await navigator.clipboard.writeText(linkFor(c));
-      copied = c;
-      setTimeout(() => copied === c && (copied = null), 1500);
+      await navigator.clipboard.writeText(linkFor(slug, c));
+      copied = id;
+      setTimeout(() => copied === id && (copied = null), 1500);
     } catch {}
   }
 
@@ -240,44 +250,57 @@
     {#if error}<p class="mt-3 text-sm text-danger">{T[error][lang]}</p>{/if}
   </section>
 
-  {#if codes}
+  {#if pages}
     <section class="mt-6 rounded-xl border border-line bg-surface p-5">
-      <h2 class="text-xl text-strong">{T.codesTitle[lang]}</h2>
-      {#if codes.codes.length}
-        <p class="mt-1 text-sm opacity-70">{codes.source === "env" ? T.codesFromEnv[lang] : T.fromAdmin[lang]}</p>
-        <ul class="mt-3 flex flex-col gap-1.5">
-          {#each codes.codes as c}
-            <li class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-              <code class="font-mono text-strong">{c}</code>
-              <span class="min-w-0 flex-1 truncate font-mono text-xs opacity-60">{linkFor(c)}</span>
-              <button type="button" onclick={() => copy(c)} class="text-xs opacity-70 hover:underline hover:opacity-100">{copied === c ? T.copied[lang] : T.copy[lang]}</button>
-            </li>
-          {/each}
-        </ul>
-      {:else}
-        <p class="mt-3 flex items-center gap-2">
-          <span class="h-2.5 w-2.5 rounded-full bg-line"></span>
-          <span class="text-strong">{T.codesNone[lang]}</span>
-        </p>
-      {/if}
+      <h2 class="text-xl text-strong">{T.pagesTitle[lang]}</h2>
+      <div class="mt-2 flex flex-col divide-y divide-line">
+        {#each apps as a (a.slug)}
+          {@const mode = shownMode(a.slug)}
+          {@const codes = pages[a.slug].codes}
+          <div class="py-4 last:pb-0">
+            <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <h3 class="text-strong">{a.title[lang]}</h3>
+              <div class="flex rounded-lg border border-line p-0.5 text-sm">
+                {#each ["off", "code", "public"] as const as m}
+                  <button
+                    type="button"
+                    aria-pressed={mode === m}
+                    disabled={busy}
+                    onclick={() => choose(a.slug, m)}
+                    class={`rounded-md px-3 py-1 transition ${mode === m ? "bg-accent text-accent-fg" : "opacity-70 hover:opacity-100"}`}
+                  >
+                    {T[m][lang]}
+                  </button>
+                {/each}
+              </div>
+            </div>
 
-      <form onsubmit={saveCodes} class="mt-5 flex flex-col gap-2">
-        <div class="flex flex-col gap-2 sm:flex-row">
-          <input bind:value={codesInput} placeholder="zurich26, demo" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label={T.codesTitle[lang]} class={`${input} font-mono text-sm`} />
-          <button type="submit" disabled={busy || !codesInput.trim()} class={`${btn} shrink-0 bg-accent text-accent-fg hover:brightness-110`}>{T.codesSave[lang]}</button>
-        </div>
-        <p class="text-xs opacity-60">{T.codesHint[lang]}</p>
-      </form>
-      {#if codes.codes.length}
-        <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <button type="button" onclick={() => removeCodes()} disabled={busy} class={`${btn} border border-line hover:border-danger hover:text-danger`}>{T.codesRemove[lang]}</button>
-          <span class="text-xs opacity-60">{T.codesRemoveHint[lang]}</span>
-        </div>
-      {/if}
-      {#if codes.source === "admin" && codes.envCodes}
-        <button type="button" onclick={() => removeCodes(true)} disabled={busy} class="mt-3 block text-sm opacity-60 hover:underline hover:opacity-100">{T.codesReset[lang]}</button>
-      {/if}
-      {#if codesError}<p class="mt-3 text-sm text-danger">{T[codesError][lang]}</p>{/if}
+            {#if mode === "code"}
+              {#if !addingCode[a.slug]}
+                <ul class="mt-3 flex flex-col gap-1.5">
+                  {#each codes as c}
+                    <li class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                      <code class="font-mono text-strong">{c}</code>
+                      <span class="min-w-0 flex-1 truncate font-mono text-xs opacity-60">{linkFor(a.slug, c)}</span>
+                      <button type="button" onclick={() => copy(a.slug, c)} class="text-xs opacity-70 hover:underline hover:opacity-100">{copied === `${a.slug}:${c}` ? T.copied[lang] : T.copy[lang]}</button>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
+              <form onsubmit={(e) => saveCodes(e, a.slug)} class="mt-3 flex flex-col gap-2">
+                <div class="flex flex-col gap-2 sm:flex-row">
+                  <input bind:value={drafts[a.slug]} placeholder="zurich26, demo" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label={`${T.code[lang]}: ${a.title[lang]}`} class={`${input} font-mono text-sm`} />
+                  <button type="submit" disabled={busy || !drafts[a.slug]?.trim()} class={`${btn} shrink-0 bg-accent text-accent-fg hover:brightness-110`}>{T.codesSave[lang]}</button>
+                </div>
+                <p class="text-xs opacity-60">{T.codesHint[lang]}</p>
+              </form>
+            {:else if mode === "public" && a.kind === "dynamic"}
+              <p class="mt-2 text-xs opacity-60">{T.publicCost[lang]}</p>
+            {/if}
+            {#if pageError?.slug === a.slug}<p class="mt-2 text-sm text-danger">{T[pageError.text][lang]}</p>{/if}
+          </div>
+        {/each}
+      </div>
     </section>
   {/if}
 

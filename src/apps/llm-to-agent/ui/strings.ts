@@ -97,6 +97,7 @@ export const S = {
   codeTitle: { de: "Workshop-Code", en: "Workshop code" },
   codeGo: { de: "Weiter", en: "Continue" },
   codeWrong: { de: "Dieser Code stimmt nicht.", en: "That code is not valid." },
+  codeOff: { de: "Dieser Workshop ist gerade nicht aktiv.", en: "This workshop isn't active right now." },
 
   /** Shown on the empty chat (model only). */
   chipsModel: [

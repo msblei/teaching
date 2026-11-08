@@ -1,0 +1,22 @@
+---
+import Base from "../layouts/Base.astro";
+import SunGlow from "../components/SunGlow.astro";
+import T from "../components/T.astro";
+---
+
+<Base title="Page not found | Marius Bleif" description="This page doesn't exist." noindex>
+  <SunGlow riseSeconds={8} />
+
+  <div class="relative z-10 min-h-[60vh] flex flex-col items-center justify-center text-center">
+    <header class="mb-10">
+      <h1 class="text-5xl md:text-6xl tracking-tight">404</h1>
+      <p class="text-2xl md:text-3xl mt-3 opacity-70">
+        <T de="Diese Seite gibt es nicht." en="This page doesn't exist." />
+      </p>
+    </header>
+
+    <a href="/" class="text-xl opacity-70 transition hover:opacity-100">
+      <T de="zurück zu teaching.mariusbleif.com" en="back to teaching.mariusbleif.com" />
+    </a>
+  </div>
+</Base>

@@ -16,7 +16,6 @@ export default defineConfig({
     schema: {
       ADMIN_PASSWORD: envField.string({ context: "server", access: "secret", optional: true }),
       OPENROUTER_API_KEY: envField.string({ context: "server", access: "secret", optional: true }),
-      WORKSHOP_CODES: envField.string({ context: "server", access: "secret", optional: true }),
       WORKSHOP_HOURLY_CAP: envField.string({ context: "server", access: "secret", optional: true }),
       LLM_TO_AGENT_CLAUDE_MODEL: envField.string({ context: "server", access: "secret", optional: true }),
       LLM_TO_AGENT_GPT_MODEL: envField.string({ context: "server", access: "secret", optional: true }),

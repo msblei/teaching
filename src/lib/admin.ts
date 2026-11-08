@@ -21,14 +21,14 @@ const MAX_FAILS_PER_HOUR = 10;
 const memory = new Map<string, unknown>();
 const blobs = () => getStore({ name: "admin", consistency: "strong" });
 
-async function read<T>(key: string): Promise<T | null> {
+export async function readValue<T>(key: string): Promise<T | null> {
   try {
     return ((await blobs().get(key, { type: "json" })) as T | null) ?? null;
   } catch {
     return (memory.get(key) as T | undefined) ?? null;
   }
 }
-async function write(key: string, value: unknown | null): Promise<void> {
+export async function writeValue(key: string, value: unknown | null): Promise<void> {
   try {
     if (value === null) await blobs().delete(key);
     else await blobs().setJSON(key, value);
@@ -39,9 +39,9 @@ async function write(key: string, value: unknown | null): Promise<void> {
 }
 
 export type StoredSecret = { value: string; savedAt: string };
-export const getStoredSecret = (name: string) => read<StoredSecret>(`secret:${name}`);
-export const setStoredSecret = (name: string, value: string) => write(`secret:${name}`, { value, savedAt: new Date().toISOString() });
-export const deleteStoredSecret = (name: string) => write(`secret:${name}`, null);
+export const getStoredSecret = (name: string) => readValue<StoredSecret>(`secret:${name}`);
+export const setStoredSecret = (name: string, value: string) => writeValue(`secret:${name}`, { value, savedAt: new Date().toISOString() });
+export const deleteStoredSecret = (name: string) => writeValue(`secret:${name}`, null);
 
 // Auth
 
@@ -96,8 +96,8 @@ const failKey = (ctx: APIContext) => {
   } catch {}
   return `fails:${ip}:${new Date().toISOString().slice(0, 13)}`;
 };
-export const tooManyFailures = async (ctx: APIContext) => ((await read<number>(failKey(ctx))) ?? 0) >= MAX_FAILS_PER_HOUR;
+export const tooManyFailures = async (ctx: APIContext) => ((await readValue<number>(failKey(ctx))) ?? 0) >= MAX_FAILS_PER_HOUR;
 export async function recordFailure(ctx: APIContext) {
   const k = failKey(ctx);
-  await write(k, ((await read<number>(k)) ?? 0) + 1);
+  await writeValue(k, ((await readValue<number>(k)) ?? 0) + 1);
 }

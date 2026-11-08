@@ -1,0 +1,38 @@
+---
+// What a locked page shows instead of its content: the code form, or a note
+// when the page is off. The form reloads the page with ?code= (see pageGate).
+import T from "./T.astro";
+
+interface Props {
+  state: "code" | "off";
+  wrong: boolean;
+}
+const { state, wrong } = Astro.props;
+---
+
+<div class="flex min-h-[50vh] items-center justify-center">
+  {
+    state === "off" ? (
+      <p class="text-center text-xl opacity-70">
+        <T de="Dieser Workshop ist gerade nicht aktiv." en="This workshop isn't active right now." />
+      </p>
+    ) : (
+      <form method="get" class="w-full max-w-sm">
+        <label for="code" class="mb-3 block text-center text-2xl text-strong">
+          <T de="Workshop-Code" en="Workshop code" />
+        </label>
+        <div class="flex gap-2 rounded-full border border-line bg-surface p-1.5 focus-within:border-accent/50">
+          <input id="code" name="code" required autocomplete="off" autocapitalize="off" class="min-w-0 flex-1 bg-transparent px-3 text-strong outline-none" />
+          <button type="submit" class="rounded-full bg-accent px-4 py-1.5 text-accent-fg">
+            <T de="Weiter" en="Continue" />
+          </button>
+        </div>
+        {wrong && (
+          <p class="mt-2 text-center text-sm text-danger">
+            <T de="Dieser Code stimmt nicht." en="That code is not valid." />
+          </p>
+        )}
+      </form>
+    )
+  }
+</div>

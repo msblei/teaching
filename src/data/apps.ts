@@ -1,8 +1,8 @@
 import type { Text } from "../lib/i18n";
 
 // Registry of teaching tools, rendered on the index page in this order.
-// `kind` documents how the app runs: "static" is fully prerendered,
-// "dynamic" has server endpoints under src/pages/api/<slug>/.
+// `kind`: "dynamic" has server endpoints under src/pages/api/<slug>/, "static"
+// has no backend of its own. Each slug gets its access setting on /admin.
 // `icon` is a file in public/.
 export type App = {
   slug: string;
