@@ -5,7 +5,7 @@
   import { getLang, type Lang } from "../../lib/i18n";
 
   type Info = { valid: boolean; usage?: number; limit?: number | null; limitRemaining?: number | null; expiresAt?: string | null; accountRemaining?: number | null };
-  type Codes = { codes: string[]; source: "admin" | "env" | null };
+  type Codes = { codes: string[]; source: "admin" | "env" | null; envCodes: boolean };
   type Status = { active: false } | { active: true; masked: string; source: "admin" | "env"; savedAt: string | null; info: Info | null };
 
   const T = {
@@ -42,7 +42,9 @@
     codesFromEnv: { de: "aus der Env-Variable WORKSHOP_CODES", en: "from the env var WORKSHOP_CODES" },
     codesHint: { de: "Mehrere mit Komma trennen. Kleinbuchstaben, Zahlen, Bindestrich.", en: "Separate several with commas. Lowercase letters, digits, hyphens." },
     codesSave: { de: "Speichern", en: "Save" },
-    codesRemove: { de: "Codes entfernen", en: "Remove codes" },
+    codesRemove: { de: "Alle Codes entfernen", en: "Remove all codes" },
+    codesRemoveHint: { de: "Sperrt die App, auch wenn in Netlify WORKSHOP_CODES gesetzt ist.", en: "Locks the app, even if WORKSHOP_CODES is set in Netlify." },
+    codesReset: { de: "Codes aus Netlify wieder verwenden", en: "Use the Netlify codes again" },
     codesBad: { de: "Ungültig: 3 bis 40 Zeichen, nur a-z, 0-9 und Bindestrich.", en: "Invalid: 3 to 40 characters, only a-z, 0-9 and hyphens." },
     link: { de: "Link mit Code", en: "Link with code" },
     copy: { de: "Kopieren", en: "Copy" },
@@ -148,9 +150,9 @@
     });
   };
 
-  const removeCodes = () =>
+  const removeCodes = (reset = false) =>
     run(async () => {
-      const { res, json } = await api("DELETE", "workshop-codes");
+      const { res, json } = await api("DELETE", reset ? "workshop-codes?reset=1" : "workshop-codes");
       if (res.ok) setCodes(json);
       else if (res.status === 401) view = "login";
     });
@@ -266,8 +268,14 @@
         </div>
         <p class="text-xs opacity-60">{T.codesHint[lang]}</p>
       </form>
-      {#if codes.source === "admin"}
-        <button type="button" onclick={removeCodes} disabled={busy} class={`${btn} mt-4 border border-line hover:border-danger hover:text-danger`}>{T.codesRemove[lang]}</button>
+      {#if codes.codes.length}
+        <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <button type="button" onclick={() => removeCodes()} disabled={busy} class={`${btn} border border-line hover:border-danger hover:text-danger`}>{T.codesRemove[lang]}</button>
+          <span class="text-xs opacity-60">{T.codesRemoveHint[lang]}</span>
+        </div>
+      {/if}
+      {#if codes.source === "admin" && codes.envCodes}
+        <button type="button" onclick={() => removeCodes(true)} disabled={busy} class="mt-3 block text-sm opacity-60 hover:underline hover:opacity-100">{T.codesReset[lang]}</button>
       {/if}
       {#if codesError}<p class="mt-3 text-sm text-danger">{T[codesError][lang]}</p>{/if}
     </section>

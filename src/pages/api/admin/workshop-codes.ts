@@ -4,7 +4,8 @@ import { CODES_SECRET, parseCodes, workshopCodes } from "../../../lib/workshop-a
 
 export const prerender = false;
 
-// Workshop codes: read, replace (comma- or space-separated), or remove.
+// Workshop codes: read, replace (comma- or space-separated), remove (locks
+// the app, overriding WORKSHOP_CODES), or ?reset=1 to fall back to the env var.
 const status = async () => Response.json(await workshopCodes());
 
 export const GET: APIRoute = ({ request }) => adminGuard(request) ?? status();
@@ -23,6 +24,7 @@ export const PUT: APIRoute = async ({ request }) => {
 export const DELETE: APIRoute = async ({ request }) => {
   const denied = adminGuard(request);
   if (denied) return denied;
-  await deleteStoredSecret(CODES_SECRET);
+  if (new URL(request.url).searchParams.has("reset")) await deleteStoredSecret(CODES_SECRET);
+  else await setStoredSecret(CODES_SECRET, "");
   return status();
 };

@@ -19,12 +19,17 @@ export const parseCodes = (raw: string) =>
     .map((c) => c.trim().toLowerCase())
     .filter(Boolean);
 
-/** The active codes and where they come from. */
-export async function workshopCodes(): Promise<{ codes: string[]; source: "admin" | "env" | null }> {
-  const stored = await getStoredSecret(CODES_SECRET);
-  if (stored?.value) return { codes: parseCodes(stored.value), source: "admin" };
+/**
+ * The active codes and where they come from. Anything saved on /admin wins,
+ * including "no codes" (an empty entry), which locks the app even when
+ * WORKSHOP_CODES is set. `envCodes` says whether the env var has codes to
+ * fall back to.
+ */
+export async function workshopCodes(): Promise<{ codes: string[]; source: "admin" | "env" | null; envCodes: boolean }> {
   const env = parseCodes(getSecret("WORKSHOP_CODES") ?? "");
-  return { codes: env, source: env.length ? "env" : null };
+  const stored = await getStoredSecret(CODES_SECRET);
+  if (stored) return { codes: parseCodes(stored.value), source: "admin", envCodes: env.length > 0 };
+  return { codes: env, source: env.length ? "env" : null, envCodes: env.length > 0 };
 }
 
 export async function isValidCode(code: string | null): Promise<boolean> {
