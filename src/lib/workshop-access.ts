@@ -69,11 +69,15 @@ const COOKIE_S = 24 * 3600;
 
 /**
  * For server-rendered pages (`prerender = false`). A code arrives as ?code=
- * (from the form or a shared link), is remembered in a cookie for this page
- * only, and is dropped from the address. The cookie holds the code itself, so
- * changing the codes on /admin locks out whoever used the old one.
+ * (from the form or a shared link) and is remembered in a cookie for this page
+ * only. The cookie holds the code itself, so changing the codes on /admin locks
+ * out whoever used the old one.
+ *
+ * The page renders in this same response and clears ?code= from the address
+ * with a script. Don't redirect to the clean URL instead: on Netlify that
+ * looped, apparently because the query string survives the redirect.
  */
-export async function pageGate(astro: AstroGlobal, slug: string): Promise<{ state: Gate; wrong: boolean; redirect?: string }> {
+export async function pageGate(astro: AstroGlobal, slug: string): Promise<{ state: Gate; wrong: boolean }> {
   astro.response.headers.set("Cache-Control", "private, no-store");
   const access = await getAccess(slug);
   const typed = astro.url.searchParams.get("code");
@@ -87,7 +91,7 @@ export async function pageGate(astro: AstroGlobal, slug: string): Promise<{ stat
         sameSite: "lax",
         secure: astro.url.protocol === "https:",
       });
-      return { state, wrong: false, redirect: astro.url.pathname };
+      return { state, wrong: false };
     }
     return { state, wrong: state === "code" };
   }

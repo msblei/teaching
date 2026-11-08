@@ -13,8 +13,7 @@ const FLEET = "https://ai-coding-workshop.mariusbleif.com";
 const CODESPACES = "https://codespaces.new/msblei/AI_coding_workshop?quickstart=1";
 const SOURCE = "https://github.com/msblei/AI_coding_workshop";
 
-const { state, wrong, redirect } = await pageGate(Astro, "ai-coding-workshop");
-if (redirect) return Astro.redirect(redirect);
+const { state, wrong } = await pageGate(Astro, "ai-coding-workshop");
 ---
 
 <Base
@@ -59,6 +58,8 @@ if (redirect) return Astro.redirect(redirect);
         </p>
 
         <script define:vars={{ FLEET }}>
+          history.replaceState(null, "", location.pathname); // drop ?code=, the cookie has it
+
           // An opaque no-cors request resolves if the fleet answers at all and
           // rejects if the VM is off, so the claim server needs no CORS headers.
           fetch(FLEET, { mode: "no-cors", cache: "no-store", signal: AbortSignal.timeout(5000) })
