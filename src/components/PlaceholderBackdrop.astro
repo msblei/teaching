@@ -1,0 +1,100 @@
+---
+// The grayed-out view behind a placeholder page's code screen: a rough diagram
+// of the topic. Only ever shown blurred, so it needs no detail.
+interface Props {
+  slug: string;
+}
+const { slug } = Astro.props;
+
+// Repeatable "random" numbers, so a diagram looks the same on every visit.
+const rnd = (i: number) => Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1;
+const range = (n: number) => Array.from({ length: n }, (_, i) => i);
+const layers = [3, 5, 5, 2].map((n, l) => range(n).map((i) => ({ x: 90 + l * 153, y: 180 + (i - (n - 1) / 2) * 62 })));
+const accent = "var(--accent)";
+---
+
+<svg viewBox="0 0 640 360" class="w-full" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  {
+    slug === "gradient-descent" && (
+      <>
+        {range(6).map((i) => <ellipse cx="350" cy="190" rx={40 + i * 50} ry={22 + i * 28} transform="rotate(-20 350 190)" />)}
+        <path d="M90 90 L180 130 L250 150 L305 175 L350 190" stroke={accent} stroke-width="5" />
+        {[[90, 90], [180, 130], [250, 150], [305, 175], [350, 190]].map(([x, y]) => <circle cx={x} cy={y} r="8" fill={accent} stroke="none" />)}
+      </>
+    )
+  }
+  {
+    slug === "backpropagation" && (
+      <>
+        {layers.slice(0, -1).flatMap((layer, l) => layer.flatMap((a) => layers[l + 1].map((b) => <path d={`M${a.x} ${a.y} L${b.x} ${b.y}`} stroke-width="1.5" />)))}
+        {layers.flat().map((n, i) => <circle cx={n.x} cy={n.y} r="17" fill={rnd(i) > 0.5 ? accent : "var(--surface)"} />)}
+        <path d="M549 50 L90 50 M112 36 L90 50 L112 64" stroke={accent} stroke-width="5" />
+      </>
+    )
+  }
+  {
+    slug === "support-vector-machines" && (
+      <>
+        <path d="M120 350 L520 10" stroke-width="5" />
+        <path d="M60 280 L440 -40 M200 400 L600 60" stroke-dasharray="8 12" />
+        {range(16).map((i) => <circle cx={60 + rnd(i) * 210} cy={30 + rnd(i + 40) * 170} r="9" fill="currentColor" stroke="none" />)}
+        {range(16).map((i) => <circle cx={370 + rnd(i + 80) * 220} cy={170 + rnd(i + 120) * 170} r="9" fill={accent} stroke="none" />)}
+      </>
+    )
+  }
+  {
+    slug === "loss-functions" && (
+      <>
+        <path d="M60 20 L60 330 L610 330" stroke-width="4" />
+        <path d="M90 40 C190 280 260 310 335 310 C410 310 490 270 590 40" stroke={accent} stroke-width="5" />
+        <path d="M90 200 L335 310 L590 200" />
+        <path d="M90 90 C210 250 280 300 335 305 C400 300 470 230 590 110" stroke-dasharray="8 12" />
+      </>
+    )
+  }
+  {
+    slug === "generative-adversarial-networks" && (
+      <>
+        <rect x="30" y="120" width="120" height="120" rx="14" stroke-dasharray="8 12" />
+        <rect x="200" y="110" width="110" height="140" rx="14" fill={accent} stroke="none" />
+        <path d="M150 180 L200 180 M310 180 L360 180" stroke-width="4" />
+        <g>{range(16).map((i) => <rect x={365 + (i % 4) * 26} y={120 + Math.floor(i / 4) * 26} width="22" height="22" fill="currentColor" stroke="none" opacity={0.2 + rnd(i) * 0.8} />)}</g>
+        <path d="M475 180 L510 180" stroke-width="4" />
+        <rect x="510" y="110" width="100" height="140" rx="14" fill="currentColor" stroke="none" />
+        <path d="M560 250 L560 320 L255 320 L255 250" stroke={accent} stroke-width="4" />
+      </>
+    )
+  }
+  {
+    slug === "transformer" && (
+      <>
+        {[60, 370].map((x, s) => (
+          <>
+            <rect x={x - 20} y="30" width="250" height="300" rx="18" stroke-dasharray="8 12" />
+            {range(s + 3).map((i) => <rect x={x} y={50 + i * (260 / (s + 3))} width="210" height={260 / (s + 3) - 14} rx="10" fill={i % 2 ? accent : "currentColor"} stroke="none" opacity={i % 2 ? 1 : 0.5} />)}
+          </>
+        ))}
+        <path d="M290 180 L350 180 M332 168 L350 180 L332 192" stroke-width="4" />
+      </>
+    )
+  }
+  {
+    slug === "attention" && (
+      <>
+        {range(9).flatMap((r) =>
+          range(13).map((c) => <rect x={60 + c * 40} y={8 + r * 39} width="36" height="35" rx="4" fill={r === Math.round(c * 0.66) ? accent : "currentColor"} stroke="none" opacity={r === Math.round(c * 0.66) ? 1 : 0.08 + rnd(r * 13 + c) * 0.35} />),
+        )}
+      </>
+    )
+  }
+  {
+    slug === "llm-reasoning" && (
+      <>
+        <path d="M100 50 L100 150 L290 150 L290 250 L470 250 L470 320 M100 150 L100 280 M290 150 L520 150 L520 60" stroke-width="4" />
+        {[[100, 50, 1], [100, 150, 1], [290, 150, 1], [290, 250, 1], [470, 250, 1], [470, 320, 2], [100, 280, 0], [520, 150, 0], [520, 60, 0]].map(([x, y, k]) => (
+          <rect x={x - 62} y={y - 20} width="124" height="40" rx="10" fill={k === 2 ? accent : k ? "currentColor" : "var(--surface)"} stroke={k ? "none" : "currentColor"} />
+        ))}
+      </>
+    )
+  }
+</svg>

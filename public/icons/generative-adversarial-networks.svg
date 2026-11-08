@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Two opposing networks, generator and discriminator. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <path d="M400 400 L624 400 M600 340 L664 400 L600 460" stroke="#23201b" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M624 624 L400 624 M424 564 L360 624 L424 684" stroke="#23201b" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="170" y="300" width="190" height="424" rx="52" fill="#23201b"/>
+  <rect x="664" y="300" width="190" height="424" rx="52" fill="#ffb860" stroke="#23201b" stroke-width="44"/>
+</svg>

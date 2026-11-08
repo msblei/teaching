@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- A small network with the error flowing back through it. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <g stroke="#23201b" stroke-width="36" fill="none">
+    <path d="M250 340 L512 512 M250 684 L512 512 M250 340 L512 280 M250 684 L512 744 M512 280 L774 512 M512 512 L774 512 M512 744 L774 512"/>
+  </g>
+  <circle cx="250" cy="340" r="62" fill="#f6f0e4" stroke="#23201b" stroke-width="36"/>
+  <circle cx="250" cy="684" r="62" fill="#f6f0e4" stroke="#23201b" stroke-width="36"/>
+  <circle cx="512" cy="280" r="62" fill="#23201b"/>
+  <circle cx="512" cy="512" r="62" fill="#23201b"/>
+  <circle cx="512" cy="744" r="62" fill="#23201b"/>
+  <circle cx="774" cy="512" r="74" fill="#ffb860" stroke="#23201b" stroke-width="36"/>
+</svg>

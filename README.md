@@ -17,6 +17,7 @@ pnpm build
 
 - `src/data/apps.ts`: registry of tools, rendered on the index page
 - `src/pages/<slug>/`: each tool's page
+- `src/pages/[slug].astro`: code screen for planned topics (`kind: "placeholder"`); a real page at `src/pages/<slug>/` replaces it
 - `src/pages/api/<slug>/`: server endpoints of dynamic tools (`prerender = false`)
 - `src/apps/<slug>/`: each tool's code (UI, shared, server), self-contained
 - `src/lib/i18n.ts`: DE/EN (both rendered, one hidden; islands listen for `langchange`)

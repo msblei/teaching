@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- A chain of thought that branches, drops a dead end and reaches an answer. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <path d="M280 240 L280 480 L500 480 L500 784 M280 480 L280 720 M500 480 L744 480 L744 300" stroke="#23201b" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="280" cy="240" r="66" fill="#23201b"/>
+  <circle cx="280" cy="720" r="52" fill="#f6f0e4" stroke="#23201b" stroke-width="36"/>
+  <circle cx="744" cy="300" r="52" fill="#f6f0e4" stroke="#23201b" stroke-width="36"/>
+  <circle cx="500" cy="784" r="70" fill="#ffb860" stroke="#23201b" stroke-width="36"/>
+</svg>

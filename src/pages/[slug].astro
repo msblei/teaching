@@ -1,0 +1,52 @@
+---
+import Base from "../layouts/Base.astro";
+import PlaceholderBackdrop from "../components/PlaceholderBackdrop.astro";
+import T from "../components/T.astro";
+import WorkshopGate from "../components/WorkshopGate.astro";
+import { apps } from "../data/apps";
+import { pageGate } from "../lib/workshop-access";
+
+export const prerender = false;
+
+// Topics planned but not built yet (kind "placeholder" in data/apps.ts): a code
+// screen over a blurred diagram, and it looks the same whether the page is Off
+// or has codes on /admin. A real page at src/pages/<slug>/ takes over this URL.
+const app = apps.find((a) => a.slug === Astro.params.slug && a.kind === "placeholder");
+if (!app) return new Response(null, { status: 404 });
+
+const { state } = await pageGate(Astro, app.slug);
+---
+
+<Base title={`${app.title.en} | Marius Bleif`} description="Workshop tools by Marius Bleif." noindex>
+  {
+    state === "open" ? (
+      <>
+        <h1 class="text-4xl md:text-5xl tracking-tight">
+          <T {...app.title} />
+        </h1>
+        <p class="mt-4 text-xl opacity-70">
+          <T de="Hier entsteht gerade etwas." en="This is still being built." />
+        </p>
+      </>
+    ) : (
+      <div class="relative">
+        <div class="pointer-events-none absolute inset-0 select-none opacity-25 blur-[7px]" aria-hidden="true">
+          <p class="text-4xl md:text-5xl tracking-tight">
+            <T {...app.title} />
+          </p>
+          <div class="mt-8">
+            <PlaceholderBackdrop slug={app.slug} />
+          </div>
+          <div class="mt-8 flex gap-3">
+            <span class="h-9 w-24 rounded-full bg-accent" />
+            <span class="h-9 w-24 rounded-full border border-current" />
+            <span class="h-9 flex-1 rounded-full border border-current" />
+          </div>
+        </div>
+        <div class="relative z-10">
+          <WorkshopGate state="code" wrong={Astro.url.searchParams.has("code")} />
+        </div>
+      </div>
+    )
+  }
+</Base>

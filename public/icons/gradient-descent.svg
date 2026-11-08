@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Contour lines of a valley with steps down to the minimum. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <g stroke="#23201b" stroke-width="36" fill="none" transform="rotate(-25 512 512)">
+    <ellipse cx="512" cy="512" rx="340" ry="220"/>
+    <ellipse cx="512" cy="512" rx="200" ry="120"/>
+  </g>
+  <path d="M270 330 L400 430 L500 480 L512 512" stroke="#23201b" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="270" cy="330" r="46" fill="#23201b"/>
+  <circle cx="512" cy="512" r="62" fill="#ffb860" stroke="#23201b" stroke-width="36"/>
+</svg>

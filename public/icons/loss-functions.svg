@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- A loss curve over a pair of axes, with its minimum marked. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <path d="M220 210 L220 800 L820 800" stroke="#23201b" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M300 240 C380 620 450 690 540 690 C640 690 720 560 790 300" stroke="#23201b" stroke-width="44" stroke-linecap="round" fill="none"/>
+  <circle cx="540" cy="690" r="60" fill="#ffb860" stroke="#23201b" stroke-width="36"/>
+</svg>

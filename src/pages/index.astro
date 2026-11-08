@@ -6,16 +6,13 @@ import { apps } from "../data/apps";
 
 <Base title="Teaching | Marius Bleif" description="Workshop tools by Marius Bleif.">
   <h1 class="text-4xl md:text-5xl tracking-tight">teaching</h1>
-  <ul class="mt-10 flex flex-col gap-8 list-none p-0">
+  <ul class="mt-10 flex flex-col gap-5 list-none p-0">
     {
       apps.map((a) => (
         <li>
-          <a href={`/${a.slug}`} class="group flex items-start gap-4 opacity-80 hover:opacity-100 transition">
-            <img src={a.icon} alt="" width="40" height="40" class="shrink-0 mt-1" />
-            <span>
-              <span class="block text-xl"><T {...a.title} /></span>
-              <span class="block opacity-60"><T {...a.tagline} /></span>
-            </span>
+          <a href={`/${a.slug}`} class="group flex items-center gap-4 opacity-80 hover:opacity-100 transition">
+            <img src={a.icon} alt="" width="40" height="40" class="shrink-0" />
+            <span class="text-xl"><T {...a.title} /></span>
           </a>
         </li>
       ))

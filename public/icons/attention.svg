@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- An attention matrix, with the strongest weights filled in. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <g fill="#23201b" opacity="0.14">
+    <rect x="220" y="220" width="168" height="168" rx="32"/><rect x="428" y="220" width="168" height="168" rx="32"/><rect x="636" y="220" width="168" height="168" rx="32"/>
+    <rect x="220" y="428" width="168" height="168" rx="32"/><rect x="428" y="428" width="168" height="168" rx="32"/><rect x="636" y="428" width="168" height="168" rx="32"/>
+    <rect x="220" y="636" width="168" height="168" rx="32"/><rect x="428" y="636" width="168" height="168" rx="32"/><rect x="636" y="636" width="168" height="168" rx="32"/>
+  </g>
+  <rect x="220" y="220" width="168" height="168" rx="32" fill="#23201b"/>
+  <rect x="428" y="428" width="168" height="168" rx="32" fill="#ffb860" stroke="#23201b" stroke-width="32"/>
+  <rect x="636" y="636" width="168" height="168" rx="32" fill="#23201b"/>
+</svg>

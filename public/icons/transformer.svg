@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Encoder and decoder as stacks of layers. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <g stroke="#23201b" stroke-width="40" fill="#f6f0e4">
+    <rect x="210" y="230" width="240" height="140" rx="36"/><rect x="210" y="442" width="240" height="140" rx="36"/><rect x="210" y="654" width="240" height="140" rx="36"/>
+    <rect x="574" y="230" width="240" height="140" rx="36" fill="#ffb860"/><rect x="574" y="442" width="240" height="140" rx="36" fill="#ffb860"/><rect x="574" y="654" width="240" height="140" rx="36" fill="#ffb860"/>
+  </g>
+  <path d="M450 512 L574 512" stroke="#23201b" stroke-width="40" stroke-linecap="round"/>
+</svg>

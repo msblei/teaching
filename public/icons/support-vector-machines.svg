@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Two classes split by a line with a margin on both sides. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <path d="M240 800 L784 224" stroke="#23201b" stroke-width="44" stroke-linecap="round"/>
+  <g stroke="#23201b" stroke-width="24" stroke-linecap="round" stroke-dasharray="10 54" fill="none">
+    <path d="M150 680 L650 150"/>
+    <path d="M374 874 L874 344"/>
+  </g>
+  <g fill="#23201b"><circle cx="240" cy="360" r="52"/><circle cx="380" cy="250" r="52"/><circle cx="210" cy="510" r="52"/></g>
+  <g fill="#ffb860" stroke="#23201b" stroke-width="32"><circle cx="784" cy="520" r="52"/><circle cx="650" cy="770" r="52"/><circle cx="810" cy="680" r="52"/></g>
+</svg>
