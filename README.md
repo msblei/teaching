@@ -47,9 +47,20 @@ Netlify so removing the key really switches the apps off.
 ### From LLM to Agent (`/llm-to-agent`)
 
 20 minutes, three stages in one chat page: a plain model, then tools
-(tutti.ch search, listing details, new price on toppreise.ch), then
-instructions as mission cards. The browser runs the agent loop one step per
-request, so participants can watch model, tool, model happen.
+(tutti.ch search, listing details, new price on toppreise.ch), then a goal.
+The browser runs the agent loop one step per request, so participants can
+watch model, tool, model happen.
+
+- Stage 3 is one goal card with blanks (kit, items, budget, extra wishes):
+  a goal with a checkable end that a single search can't meet. While it runs,
+  a tracker above the composer shows items found, total against budget and
+  the step count. The agent reports through a `track_goal` tool that the
+  harness answers itself: links must come from tool results, prices are taken
+  from those results, and the harness does the sums.
+- The harness sets the step limit (15 requests with a goal, 8 without). The
+  last request forbids tool calls, so a run always ends with an answer.
+- A photo can be attached to any message (camera button in the composer);
+  sent without text it asks what the thing is and what it is worth used.
 
 - Access is set on `/admin`; with a code, `?code=` in the link works too.
 - Models run through OpenRouter. A Claude | GPT picker swaps the model at any stage

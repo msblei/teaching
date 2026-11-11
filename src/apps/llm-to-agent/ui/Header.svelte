@@ -20,7 +20,7 @@
     theme: Theme;
     view: "chat" | "trace";
     busy: boolean;
-    /** Which of the three agent parts are in use: model, tools, instructions. */
+    /** Which of the three agent parts are in use: model, tools, goal. */
     reached: [boolean, boolean, boolean];
     /** No workshop code yet: the toolbar is shown but can't be used. */
     locked?: boolean;

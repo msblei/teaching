@@ -6,7 +6,7 @@ export const S = {
   // Progress steps in the header
   model: { de: "Modell", en: "Model" },
   tools: { de: "Werkzeuge", en: "Tools" },
-  instructions: { de: "Anweisungen", en: "Instructions" },
+  instructions: { de: "Ziel", en: "Goal" },
 
   greeting: { de: "Womit kann ich helfen?", en: "What can I help with?" },
   placeholder: { de: "Frag irgendwas", en: "Ask anything" },
@@ -21,23 +21,28 @@ export const S = {
   toolError: { de: "fehlgeschlagen", en: "failed" },
   memberSince: { de: "Mitglied seit", en: "member since" },
 
-  missionsTitle: { de: "Gib deinem Agenten eine Aufgabe", en: "Give your agent a task" },
+  attachPhoto: { de: "Foto anhängen", en: "Attach a photo" },
+  removePhoto: { de: "Foto entfernen", en: "Remove photo" },
+  /** Sent when a photo goes out without any text. */
+  photoDefault: { de: "Was ist das, und was ist es gebraucht wert?", en: "What is this, and what is it worth second-hand?" },
+
+  missionsTitle: { de: "Gib deinem Agenten ein Ziel", en: "Give your agent a goal" },
+  goalReached: { de: "Ziel erreicht", en: "Goal reached" },
+  goalMissed: { de: "Ziel nicht erreicht", en: "Goal not reached" },
+  goalItems: { de: "Teile", en: "items" },
+  goalOpen: { de: "noch offen", en: "still open" },
+  goalReport: { de: "Fortschritt gemeldet", en: "Reported progress" },
+  step: { de: "Schritt", en: "Step" },
   startMission: { de: "Agent starten", en: "Start agent" },
-  cancel: { de: "Abbrechen", en: "Cancel" },
+  cancel: { de: "Schliessen", en: "Close" },
   showInstructions: { de: "Ganze Anweisungen anzeigen", en: "Show full instructions" },
   hideInstructions: { de: "Anweisungen ausblenden", en: "Hide instructions" },
   editHint: { de: "Du kannst den Text direkt bearbeiten.", en: "You can edit the text directly." },
-  takePhoto: { de: "Foto aufnehmen", en: "Take a photo" },
-  changePhoto: { de: "Anderes Foto", en: "Change photo" },
-  removeInstructions: { de: "Anweisungen entfernen", en: "Remove instructions" },
-  sameAgent: {
-    de: "Gleiches Modell, gleiche Werkzeuge, andere Anweisungen.",
-    en: "Same model, same tools, different instructions.",
-  },
+  removeInstructions: { de: "Ziel entfernen", en: "Remove goal" },
 
   copy: { de: "Kopieren", en: "Copy" },
   copied: { de: "Kopiert", en: "Copied" },
-  stepCap: { de: "Der Agent hat nach 8 Schritten angehalten.", en: "The agent stopped after 8 steps." },
+  stepCap: { de: "Schrittlimit erreicht. Der Harness verlangt jetzt eine Antwort.", en: "Step limit reached. The harness now demands an answer." },
   refused: { de: "Das Modell hat diese Anfrage abgelehnt.", en: "The model declined this request." },
   noKey: {
     de: "Noch kein API-Key aktiv. Warte kurz auf die Kursleitung und sende die Nachricht dann nochmals.",
@@ -50,11 +55,11 @@ export const S = {
   /** {n} is the level number. */
   levelUnlocked: { de: "Level {n} freigeschaltet", en: "Level {n} unlocked" },
   levelToolsSub: { de: "Dein Modell kann jetzt etwas tun.", en: "Your model can now do things." },
-  levelInstrSub: { de: "Gib deinem Agenten eine Aufgabe.", en: "Give your agent a job." },
+  levelInstrSub: { de: "Gib deinem Agenten ein Ziel, das er selbst überprüfen kann.", en: "Give your agent a goal it can check for itself." },
   levelGo: { de: "Weiter", en: "Continue" },
   tourToolsButton: { de: "Gib deinem Modell Werkzeuge.", en: "Give your model tools." },
   tourToolsMenu: { de: "Schalte ein Werkzeug ein.", en: "Switch on a tool." },
-  tourMissions: { de: "Wähle eine Aufgabe und starte deinen Agenten.", en: "Pick a task and start your agent." },
+  tourMissions: { de: "Öffne das Ziel, passe es an und starte deinen Agenten.", en: "Open the goal, make it yours and start your agent." },
   tourSkip: { de: "Überspringen", en: "Skip" },
 
   // View switch
@@ -67,6 +72,7 @@ export const S = {
   laneAppSub: { de: "führt den Loop aus", en: "runs the loop" },
   laneTools: { de: "Werkzeuge", en: "Tools" },
   laneToolsSub: { de: "tutti.ch, toppreise.ch", en: "tutti.ch, toppreise.ch" },
+  harnessChecks: { de: "Harness prüft selbst", en: "Harness checks itself" },
   traceEmpty: { de: "Schreib eine Nachricht und schau zu, was dabei passiert.", en: "Send a message and watch what happens." },
   you: { de: "Du", en: "You" },
   turn: { de: "Nachricht", en: "Message" },
@@ -101,12 +107,12 @@ export const S = {
 
   /** Shown on the empty chat (model only). */
   chipsModel: [
-    { de: "Was kostet ein gebrauchtes Rennvelo gerade auf tutti?", en: "What does a used road bike cost on tutti right now?" },
+    { de: "Was kosten gebrauchte Ski gerade auf tutti?", en: "What do used skis cost on tutti right now?" },
     { de: "Erkläre mir in zwei Sätzen, was du bist.", en: "Explain in two sentences what you are." },
   ],
   /** Shown one after the other once tools are on. */
   chipsTools: [
-    { de: "Was kostet ein gebrauchtes Rennvelo gerade auf tutti?", en: "What does a used road bike cost on tutti right now?" },
-    { de: "Ist das günstigste davon ein guter Deal?", en: "Is the cheapest one a good deal?" },
+    { de: "Was kosten gebrauchte Ski gerade auf tutti?", en: "What do used skis cost on tutti right now?" },
+    { de: "Ist das günstigste Paar davon ein guter Deal?", en: "Is the cheapest pair a good deal?" },
   ],
 } satisfies Record<string, Text | Text[]>;

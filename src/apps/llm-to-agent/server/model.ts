@@ -1,7 +1,7 @@
 import { env } from "./env";
 import { openrouterKey } from "../../../lib/openrouter";
 import { TOOL_DEFS } from "../shared/tools";
-import type { ChatMessage, ModelKey, ToolCall, ToolName } from "../shared/types";
+import type { AgentTool, ChatMessage, ModelKey, ToolCall } from "../shared/types";
 
 // One model step through OpenRouter (OpenAI-compatible chat completions),
 // streamed. The browser runs the loop (model, tool, model, ...) so
@@ -46,7 +46,16 @@ function sanitize(messages: ChatMessage[], model: ModelKey): unknown[] {
   });
 }
 
-export function requestBody(params: { model: ModelKey; messages: ChatMessage[]; tools: ToolName[]; system?: string }) {
+export type StepParams = {
+  model: ModelKey;
+  messages: ChatMessage[];
+  tools: AgentTool[];
+  system?: string;
+  /** Last step the harness allows: the model has to answer, it may not call tools. */
+  final?: boolean;
+};
+
+export function requestBody(params: StepParams) {
   return {
     model: env.modelId(params.model),
     max_tokens: 8000,
@@ -61,6 +70,7 @@ export function requestBody(params: { model: ModelKey; messages: ChatMessage[]; 
             type: "function",
             function: { name: TOOL_DEFS[t].name, description: TOOL_DEFS[t].description, parameters: TOOL_DEFS[t].input_schema },
           })),
+          ...(params.final ? { tool_choice: "none" } : {}),
         }
       : {}),
   };
@@ -87,7 +97,7 @@ function mergeReasoning(into: Record<string, unknown>[], pieces: Record<string, 
  * credit, rate limit) throw ModelError, so the endpoint can answer with a
  * plain status code. Afterwards, events are yielded as they arrive.
  */
-export async function openStep(params: { model: ModelKey; messages: ChatMessage[]; tools: ToolName[]; system?: string }) {
+export async function openStep(params: StepParams) {
   const key = (await openrouterKey())?.key;
   if (!key) throw new ModelError("no_key", "no OpenRouter key set (see /admin)");
   let res: Response;

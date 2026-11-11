@@ -1,11 +1,11 @@
 import type { APIRoute } from "astro";
 import { guard } from "../../../lib/workshop-access";
 import { openStep, ModelError } from "../../../apps/llm-to-agent/server/model";
-import { MODEL_KEYS, TOOL_NAMES, type ChatMessage, type ModelKey, type ToolName } from "../../../apps/llm-to-agent/shared/types";
+import { AGENT_TOOLS, MODEL_KEYS, type AgentTool, type ChatMessage, type ModelKey } from "../../../apps/llm-to-agent/shared/types";
 
 export const prerender = false;
 
-const MAX_MESSAGES = 80;
+const MAX_MESSAGES = 140; // a goal run: up to 15 steps, several tool calls each
 const MAX_SYSTEM = 8000;
 const MAX_BODY = 5_000_000; // photos are resized in the browser first
 const ROLES = ["user", "assistant", "tool"];
@@ -19,13 +19,13 @@ export const POST: APIRoute = async ({ request }) => {
   const raw = await request.text();
   if (raw.length > MAX_BODY) return Response.json({ error: "too_large" }, { status: 413 });
 
-  let body: { model?: unknown; messages?: unknown; tools?: unknown; system?: unknown };
+  let body: { model?: unknown; messages?: unknown; tools?: unknown; system?: unknown; final?: unknown };
   try {
     body = JSON.parse(raw);
   } catch {
     return Response.json({ error: "bad_json" }, { status: 400 });
   }
-  const { model = "claude", messages, tools = [], system } = body;
+  const { model = "claude", messages, tools = [], system, final } = body;
   if (!MODEL_KEYS.includes(model as ModelKey)) return Response.json({ error: "bad_model" }, { status: 400 });
   if (
     !Array.isArray(messages) ||
@@ -34,7 +34,7 @@ export const POST: APIRoute = async ({ request }) => {
     !messages.every((m) => m && typeof m === "object" && ROLES.includes((m as { role?: string }).role ?? ""))
   )
     return Response.json({ error: "bad_messages" }, { status: 400 });
-  if (!Array.isArray(tools) || !tools.every((t) => TOOL_NAMES.includes(t)))
+  if (!Array.isArray(tools) || !tools.every((t) => AGENT_TOOLS.includes(t)))
     return Response.json({ error: "bad_tools" }, { status: 400 });
   if (system !== undefined && (typeof system !== "string" || system.length > MAX_SYSTEM))
     return Response.json({ error: "bad_system" }, { status: 400 });
@@ -44,8 +44,9 @@ export const POST: APIRoute = async ({ request }) => {
     events = await openStep({
       model: model as ModelKey,
       messages: messages as ChatMessage[],
-      tools: tools as ToolName[],
+      tools: tools as AgentTool[],
       system: system as string | undefined,
+      final: final === true,
     });
   } catch (err) {
     const kind = err instanceof ModelError ? err.kind : "upstream";

@@ -7,6 +7,7 @@
   import type { Text, Lang } from "../../../lib/i18n";
   import { S } from "./strings";
   import Icon from "./Icon.svelte";
+  import { prepareImage, type Photo } from "./agent";
 
   let {
     lang,
@@ -26,7 +27,7 @@
     menuOpen?: boolean;
     instructionsLabel?: Text | null;
     onclearinstructions: () => void;
-    onsend: (text: string) => void;
+    onsend: (text: string, image?: Photo) => void;
     /** The user turns to the text field (focus, or a click into it while focused). */
     onengage?: () => void;
   } = $props();
@@ -39,9 +40,24 @@
   // Onboarding nudge: tools just became available and none is on yet.
   const nudge = $derived(toolsUnlocked && !anyTool && !instructionsLabel);
 
+  // A photo goes out with the next message; the models can see.
+  let photo = $state<Photo | null>(null);
+  async function onPhoto(e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    const f = input.files?.[0];
+    input.value = ""; // the same photo can be picked again
+    if (!f) return;
+    try {
+      photo = await prepareImage(f);
+      field?.focus();
+    } catch {}
+  }
+
   function send() {
-    if (!draft.trim() || busy) return;
-    onsend(draft.trim());
+    const text = draft.trim() || (photo ? S.photoDefault[lang] : "");
+    if (!text || busy) return;
+    onsend(text, photo ?? undefined);
+    photo = null;
     draft = "";
     queueMicrotask(grow);
   }
@@ -72,6 +88,14 @@
 <svelte:window onclick={outside} onkeydown={(e) => e.key === "Escape" && (menuOpen = false)} />
 
 <div bind:this={box} class="relative rounded-[1.75rem] border border-line bg-surface px-3 pb-2.5 pt-3 shadow-[0_2px_16px_rgb(0_0_0/0.12)] focus-within:border-accent/50">
+  {#if photo}
+    <div class="relative mb-2 ml-2 inline-block">
+      <img src={`data:${photo.mediaType};base64,${photo.data}`} alt="" class="h-16 w-16 rounded-xl object-cover" />
+      <button type="button" onclick={() => (photo = null)} aria-label={S.removePhoto[lang]} class="absolute -right-2 -top-2 rounded-full border border-line bg-surface p-0.5 hover:bg-surface-2">
+        <Icon name="x" size={14} />
+      </button>
+    </div>
+  {/if}
   <textarea
     bind:this={field}
     onfocus={() => {
@@ -89,6 +113,10 @@
   ></textarea>
 
   <div class="mt-2 flex items-center gap-1.5">
+    <label title={S.attachPhoto[lang]} class="flex h-[2.125rem] w-[2.125rem] shrink-0 cursor-pointer items-center justify-center rounded-full border border-line transition hover:bg-surface-2 hover:text-strong">
+      <input type="file" accept="image/*" class="sr-only" onchange={onPhoto} aria-label={S.attachPhoto[lang]} />
+      <Icon name="camera" size={17} />
+    </label>
     {#if toolsUnlocked}
       <button
         bind:this={trigger}
@@ -125,7 +153,7 @@
     <button
       type="button"
       onclick={send}
-      disabled={busy || !draft.trim()}
+      disabled={busy || (!draft.trim() && !photo)}
       aria-label={S.send[lang]}
       class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-accent-fg transition hover:brightness-110 disabled:opacity-30"
     >

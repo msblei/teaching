@@ -4,15 +4,15 @@
 //
 //   node scripts/prewarm.ts https://teaching.mariusbleif.com <workshop-code>
 //
-// Searches the mission defaults (DE and EN wording), reads the top listings
+// Searches the goal card's defaults and likely variations, reads the top listings
 // of each search, and checks the new prices. Run it about 10 minutes before
 // the session, with CACHE_MINUTES set to 90 or so in Netlify.
 
 const [base = "http://localhost:4329", code = "dev"] = process.argv.slice(2);
 
-// Mission defaults: Deal check (Rennvelo, Rahmen 56) and Starter kit (Skifahren).
-const SEARCHES = ["Rennvelo", "Rennvelo 56", "Rennvelo Rahmen 56", "Ski", "Skischuhe", "Skihelm", "Skibrille", "Skistöcke", "Skijacke"];
-const PRICES = ["Rennvelo", "Skihelm"];
+// The stage 2 chip (used skis) and the goal card's default (beginner ski kit, boots in size 42).
+const SEARCHES = ["Ski", "Ski gebraucht", "Ski Anfänger", "Skischuhe", "Skischuhe 42", "Skihelm", "Helm Ski", "Skistöcke", "Ski Set", "Skiset"];
+const PRICES = ["Ski", "Skihelm", "Skischuhe"];
 const LISTINGS_PER_SEARCH = 5;
 const PARALLEL = 3; // gentle on the sites
 

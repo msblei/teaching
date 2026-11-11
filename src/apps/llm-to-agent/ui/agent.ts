@@ -1,5 +1,5 @@
-import type { ChatMessage, ContentPart, ModelKey, ToolCall, ToolName, ToolResult } from "../shared/types";
-import { TOOL_NAMES } from "../shared/types";
+import type { AgentTool, ChatMessage, ContentPart, Goal, GoalItem, Listing, ModelKey, ToolCall, ToolName, ToolResult } from "../shared/types";
+import { GOAL_TOOL, TOOL_NAMES } from "../shared/types";
 import { TOOL_DEFS } from "../shared/tools";
 import type { Text } from "../../../lib/i18n";
 
@@ -10,11 +10,20 @@ import type { Text } from "../../../lib/i18n";
 export const CODE_KEY = "teach.llm-to-agent.code";
 const MAX_STEPS = 8;
 
+/**
+ * Added to the instructions of the last step the harness allows. That
+ * request also forbids tool calls, so the run always ends with an answer.
+ */
+const LIMIT_NOTE =
+  "[Harness] Step limit reached: you cannot call tools any more. Answer now with what you have. If the goal is not fully reached, say what is missing and what it would cost.";
+
 /** What the chat view shows. */
 export type Item =
   | { kind: "user"; text: string; image?: string }
   | { kind: "assistant"; text: string; model: ModelKey }
   | { kind: "tool"; id: string; name: ToolName; input: Record<string, unknown>; status: "running" | "done" | "error"; result?: ToolResult; error?: string }
+  /** The agent reported on its goal; the numbers are the harness's own check. */
+  | { kind: "progress"; found: number; count: number; total: number; budget: number; reached: boolean; note?: string }
   | { kind: "notice"; key: "stepCap" | "refused" | "noKey" | "errBusy" | "errGeneric" }
   /** Marks where new instructions start; the model context starts fresh there. */
   | { kind: "divider"; label: Text };
@@ -25,16 +34,25 @@ export type TraceMsg = { role: "system" | "user" | "assistant" | "tool"; preview
 /** What the "under the hood" view shows: every hop between app, model and tools. */
 export type TraceEvent =
   | { kind: "user"; text: string; image: boolean }
-  | { kind: "request"; n: number; model: string; tools: ToolName[]; messages: TraceMsg[]; bytes: number; raw: string }
+  | { kind: "request"; n: number; model: string; tools: AgentTool[]; messages: TraceMsg[]; bytes: number; raw: string }
   | { kind: "response"; n: number; ms?: number; text: string; calls: { id: string; name: string; args: string }[]; final: boolean; streaming: boolean }
   | { kind: "tool-call"; id: string; name: string; args: string; url?: string }
   | { kind: "tool-result"; id: string; name: string; ms: number; source?: string; summary: Text; raw: string; error?: string }
   | { kind: "divider"; label: Text }
   | { kind: "error"; text: string };
 
-export type Chat = { messages: ChatMessage[]; items: Item[]; trace: TraceEvent[]; busy: boolean };
+export type Chat = {
+  messages: ChatMessage[];
+  items: Item[];
+  trace: TraceEvent[];
+  busy: boolean;
+  /** Set while a goal is active (stage 3). */
+  goal: Goal | null;
+  /** Model requests used by the current message, and the harness's limit. */
+  step: { n: number; max: number } | null;
+};
 
-export const newChat = (): Chat => ({ messages: [], items: [], trace: [], busy: false });
+export const newChat = (): Chat => ({ messages: [], items: [], trace: [], busy: false, goal: null, step: null });
 
 export class ApiError extends Error {
   constructor(
@@ -68,6 +86,8 @@ export const checkCode = (c: string): Promise<"open" | "code" | "off"> =>
     () => "open" as const,
     (err) => (err instanceof ApiError && err.code === "off" ? "off" : "code"),
   );
+
+export type Photo = { data: string; mediaType: "image/jpeg" };
 
 type Assistant = Extract<ChatMessage, { role: "assistant" }>;
 
@@ -123,7 +143,7 @@ function preview(m: ChatMessage): string {
 }
 
 /** The request as the model receives it, readable: images and encrypted reasoning shortened. */
-function rawRequest(modelId: string, system: string | undefined, messages: ChatMessage[], tools: ToolName[]) {
+function rawRequest(modelId: string, system: string | undefined, messages: ChatMessage[], tools: AgentTool[], final: boolean) {
   const msgs = messages.map((m) => {
     if (m.role === "assistant") {
       const { model: _m, reasoning_details, ...rest } = m;
@@ -137,7 +157,70 @@ function rawRequest(modelId: string, system: string | undefined, messages: ChatM
     model: modelId,
     messages: [...(system ? [{ role: "system", content: system }] : []), ...msgs],
     ...(tools.length ? { tools: tools.map((t) => ({ type: "function", function: { name: TOOL_DEFS[t].name, description: TOOL_DEFS[t].description, parameters: TOOL_DEFS[t].input_schema } })) } : {}),
+    ...(tools.length && final ? { tool_choice: "none" } : {}),
   };
+}
+
+// ---- The goal tool: answered by the harness itself, no website involved ----
+
+/** Listing id at the end of a tutti URL, so different spellings of one link match. */
+const listingKey = (url: string) => url.trim().match(/\/vi\/(?:[^?#]*\/)?(\d+)\/?(?:[?#].*)?$/)?.[1] ?? url.trim();
+
+/** Every listing a tool has really returned in this chat. */
+function knownListings(chat: Chat): Map<string, Listing> {
+  const known = new Map<string, Listing>();
+  for (const i of chat.items) {
+    if (i.kind !== "tool" || !i.result) continue;
+    if (i.result.tool === "search_tutti") for (const l of i.result.listings) known.set(listingKey(l.url), l);
+    else if (i.result.tool === "get_listing") known.set(listingKey(i.result.listing.url), i.result.listing);
+  }
+  return known;
+}
+
+/**
+ * Checks the agent's report: links must come from tool results, prices are
+ * taken from those results, and the harness does the adding up. Updates the
+ * tracker and returns what the model gets back.
+ */
+function checkGoal(chat: Chat, input: Record<string, unknown>): string {
+  const reported = Array.isArray(input.items) ? (input.items as Array<Record<string, unknown> | null>) : [];
+  if (!reported.length) return "Error: items must list every item the goal needs, found or not.";
+  const budget = typeof input.budget_chf === "number" && input.budget_chf > 0 ? input.budget_chf : (chat.goal?.budget ?? 0);
+  const known = knownListings(chat);
+  const rejected: string[] = [];
+
+  const items: GoalItem[] = reported.slice(0, 12).map((r) => {
+    const name = (typeof r?.name === "string" && r.name.trim().slice(0, 60)) || "?";
+    if (r?.found !== true) return { name, found: false };
+    const l = typeof r.url === "string" ? known.get(listingKey(r.url)) : undefined;
+    if (!l) {
+      rejected.push(`"${name}": ${typeof r.url === "string" ? r.url : "no URL"} was not returned by any of your tool calls, so it does not count.`);
+      return { name, found: false };
+    }
+    return { name, found: true, title: l.title, price: l.price, location: l.location, url: l.url };
+  });
+
+  // A set that covers several items is paid for once.
+  const total = [...new Map(items.filter((i) => i.found).map((i) => [i.url, i.price ?? 0])).values()].reduce((a, b) => a + b, 0);
+  const open = items.filter((i) => !i.found);
+  const reached = !open.length && total <= budget;
+  const note = typeof input.note === "string" ? input.note.trim().slice(0, 200) : undefined;
+  chat.goal = { items, budget, total, reached, note, updates: (chat.goal?.updates ?? 0) + 1 };
+  chat.items.push({ kind: "progress", found: items.length - open.length, count: items.length, total, budget, reached, note });
+
+  const lines = [
+    `Checked by the harness: ${items.length - open.length} of ${items.length} items found. Total CHF ${total} of ${budget}` +
+      (total <= budget ? ` (CHF ${budget - total} left).` : ` (CHF ${total - budget} over budget).`),
+    ...items.map((i) => (i.found ? `- ${i.name}: ${i.title}, CHF ${i.price}${i.location ? `, ${i.location}` : ""}` : `- ${i.name}: open`)),
+    ...rejected.map((r) => `Rejected ${r} Only use listings you found.`),
+  ];
+  if (reached) lines.push("Goal reached on items and budget. Make sure the user's other wishes hold too, then give the final answer.");
+  else {
+    if (open.length) lines.push(`Still open: ${open.map((i) => i.name).join(", ")}.`);
+    if (total > budget) lines.push("Over budget: swap something for a cheaper listing.");
+  }
+  if (chat.step) lines.push(`Steps used: ${chat.step.n} of ${chat.step.max}.`);
+  return lines.join("\n");
 }
 
 type ToolItem = Extract<Item, { kind: "tool" }>;
@@ -149,6 +232,23 @@ async function runCall(chat: Chat, call: ToolCall): Promise<ChatMessage> {
   try {
     input = JSON.parse(call.function.arguments || "{}");
   } catch {}
+
+  if (call.function.name === GOAL_TOOL) {
+    chat.trace.push({ kind: "tool-call", id: call.id, name: GOAL_TOOL, args: call.function.arguments || "{}" });
+    const content = checkGoal(chat, input);
+    const g = chat.goal;
+    chat.trace.push({
+      kind: "tool-result",
+      id: call.id,
+      name: GOAL_TOOL,
+      ms: 0,
+      summary: g
+        ? { de: `${g.items.filter((i) => i.found).length}/${g.items.length} gefunden · CHF ${g.total} von ${g.budget}`, en: `${g.items.filter((i) => i.found).length}/${g.items.length} found · CHF ${g.total} of ${g.budget}` }
+        : { de: "", en: "" },
+      raw: content,
+    });
+    return reply(content);
+  }
 
   chat.items.push({ kind: "tool", id: call.id, name, input, status: "running" });
   chat.trace.push({ kind: "tool-call", id: call.id, name, args: call.function.arguments || "{}" });
@@ -194,9 +294,20 @@ async function runCall(chat: Chat, call: ToolCall): Promise<ChatMessage> {
  */
 export async function runTurn(
   chat: Chat,
-  user: { text: string; image?: { data: string; mediaType: "image/jpeg" } },
-  opts: { model: ModelKey; modelId: string; tools: ToolName[]; system?: string },
+  user: { text: string; image?: Photo },
+  opts: {
+    model: ModelKey;
+    modelId: string;
+    tools: ToolName[];
+    system?: string;
+    /** A goal is active: the agent also gets the goal tool. */
+    goal?: boolean;
+    /** Most model requests this message may set off (the last one must answer). */
+    maxSteps?: number;
+  },
 ): Promise<boolean> {
+  const tools: AgentTool[] = opts.goal && opts.tools.length ? [...opts.tools, GOAL_TOOL] : opts.tools;
+  const max = Math.max(2, opts.maxSteps ?? MAX_STEPS);
   let failed = false;
   const dataUrl = user.image && `data:${user.image.mediaType};base64,${user.image.data}`;
   const content: string | ContentPart[] = dataUrl
@@ -216,17 +327,22 @@ export async function runTurn(
   const n0 = chat.trace.filter((e) => e.kind === "request").length;
 
   try {
-    for (let step = 0; step < MAX_STEPS; step++) {
+    for (let step = 0; step < max; step++) {
       const n = n0 + step + 1;
-      const raw = rawRequest(opts.modelId, opts.system, chat.messages, opts.tools);
+      chat.step = { n: step + 1, max };
+      // The harness sets the limit: the last step has to be an answer.
+      const final = step === max - 1 && tools.length > 0;
+      const system = final ? `${opts.system ? `${opts.system}\n\n` : ""}${LIMIT_NOTE}` : opts.system;
+      if (final) chat.items.push({ kind: "notice", key: "stepCap" });
+      const raw = rawRequest(opts.modelId, system, chat.messages, tools, final);
       const rawText = JSON.stringify(raw, null, 2);
       chat.trace.push({
         kind: "request",
         n,
         model: opts.modelId,
-        tools: opts.tools,
+        tools,
         messages: [
-          ...(opts.system ? [{ role: "system" as const, preview: clip(opts.system, 120), isNew: step === 0 && freshContext }] : []),
+          ...(system ? [{ role: "system" as const, preview: clip(final ? LIMIT_NOTE : system, 120), isNew: final || (step === 0 && freshContext) }] : []),
           ...chat.messages.map((m, i) => ({ role: m.role, preview: preview(m), isNew: i >= seen })),
         ],
         bytes: new TextEncoder().encode(JSON.stringify(raw)).length,
@@ -239,7 +355,7 @@ export async function runTurn(
 
       let answer: Extract<Item, { kind: "assistant" }> | undefined;
       const { message, finish } = await streamStep(
-        { model: opts.model, messages: chat.messages, tools: opts.tools, system: opts.system },
+        { model: opts.model, messages: chat.messages, tools, system, final },
         (delta) => {
           if (!answer) {
             chat.items.push({ kind: "assistant", text: "", model: opts.model });
@@ -264,11 +380,14 @@ export async function runTurn(
       }
       if (!calls.length) return true;
 
-      // Run all calls of this step in parallel, results in call order.
-      const results = await Promise.all(calls.map((c) => runCall(chat, c)));
+      // Run all calls of this step in parallel, results in call order. The
+      // goal report is checked last, so it sees this step's search results.
+      const results = new Array<ChatMessage>(calls.length);
+      const isGoal = (c: ToolCall) => c.function.name === GOAL_TOOL;
+      await Promise.all(calls.map(async (c, i) => !isGoal(c) && (results[i] = await runCall(chat, c))));
+      for (const [i, c] of calls.entries()) if (isGoal(c)) results[i] = await runCall(chat, c);
       chat.messages.push(...results);
     }
-    chat.items.push({ kind: "notice", key: "stepCap" });
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) throw err;
     failed = true;
@@ -296,7 +415,7 @@ function rollbackToLastAnswer(chat: Chat) {
 }
 
 /** Downscales a photo to keep requests small (the model needs ~1000px at most). */
-export async function prepareImage(file: File): Promise<{ data: string; mediaType: "image/jpeg" }> {
+export async function prepareImage(file: File): Promise<Photo> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, 1024 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");

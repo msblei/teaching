@@ -4,6 +4,7 @@
   // when the model asks for a tool, the app (not the model) calls the
   // website and adds the result to the next, bigger request.
   import type { Chat, TraceEvent, TraceMsg } from "./agent";
+  import { GOAL_TOOL } from "../shared/types";
   import { S } from "./strings";
   import Icon from "./Icon.svelte";
   import type { Lang } from "../../../lib/i18n";
@@ -150,7 +151,7 @@
           <div class="col-span-3 sm:col-span-2 sm:col-start-2">
             {@render arrow("right", e.name)}
             <div class="rounded-xl border border-line bg-surface p-3 text-sm">
-              <p class="text-xs opacity-60">{S.appCalls[lang]}</p>
+              <p class="text-xs opacity-60">{e.name === GOAL_TOOL ? S.harnessChecks[lang] : S.appCalls[lang]}</p>
               <p class="mt-1 break-all font-mono text-xs text-strong">{e.url ? `GET ${e.url}` : `${e.name}(${e.args})`}</p>
             </div>
           </div>

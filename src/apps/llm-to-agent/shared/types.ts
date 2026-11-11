@@ -3,6 +3,30 @@
 export type ToolName = "search_tutti" | "get_listing" | "check_new_price";
 export const TOOL_NAMES: ToolName[] = ["search_tutti", "get_listing", "check_new_price"];
 
+/**
+ * A tool the harness runs itself (in the browser, no website involved): the
+ * agent reports its progress on the goal, the harness checks it.
+ */
+export const GOAL_TOOL = "track_goal";
+export type AgentTool = ToolName | typeof GOAL_TOOL;
+export const AGENT_TOOLS: AgentTool[] = [...TOOL_NAMES, GOAL_TOOL];
+
+/** One thing the goal needs, with the listing currently picked for it. */
+export type GoalItem = { name: string; found: boolean; title?: string; price?: number; location?: string; url?: string };
+
+/** The goal as the harness tracks it. Prices and sums come from tool results, never from the model. */
+export type Goal = {
+  items: GoalItem[];
+  budget: number; // CHF
+  total: number; // CHF, each listing counted once
+  /** All items found and the total within budget. */
+  reached: boolean;
+  /** The agent's own line on what it does next. */
+  note?: string;
+  /** How often the agent has reported so far. */
+  updates: number;
+};
+
 /** Where a tool result came from. "demo" is recorded sample data, shown with a marker in the UI. */
 export type DataSource = "live" | "cache" | "demo";
 

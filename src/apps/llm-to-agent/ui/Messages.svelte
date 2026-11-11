@@ -3,6 +3,7 @@
   import { MODEL_LABELS } from "../shared/types";
   import Markdown from "./Markdown.svelte";
   import ToolRow from "./ToolRow.svelte";
+  import Icon from "./Icon.svelte";
   import { S } from "./strings";
   import type { Lang } from "../../../lib/i18n";
 
@@ -30,6 +31,15 @@
       </div>
     {:else if item.kind === "tool"}
       <ToolRow {item} {lang} />
+    {:else if item.kind === "progress"}
+      <div class="my-1 text-[0.95rem] opacity-80">
+        <p class="flex items-center gap-2">
+          <Icon name={item.reached ? "check" : "target"} size={16} class="shrink-0 text-accent" />
+          <span class="shrink-0">{S.goalReport[lang]}</span>
+          <span class="tabular-nums opacity-70">· {item.found}/{item.count} · CHF {item.total.toLocaleString("de-CH")} / {item.budget.toLocaleString("de-CH")}</span>
+        </p>
+        {#if item.note}<p class="ml-6 opacity-70">{item.note}</p>{/if}
+      </div>
     {:else if item.kind === "divider"}
       <div class="my-2 flex items-center gap-3 text-sm opacity-70">
         <span class="h-px flex-1 bg-line"></span>

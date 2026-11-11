@@ -39,7 +39,7 @@
         <span class="spark" style:--a={`${(360 / PARTICLES) * i}deg`} style:--d={`${(i % 3) * 60}ms`}></span>
       {/each}
       <span class="badge relative flex h-20 w-20 items-center justify-center rounded-full bg-accent text-accent-fg">
-        <Icon name={level === 2 ? "tools" : "instructions"} size={36} />
+        <Icon name={level === 2 ? "tools" : "target"} size={36} />
       </span>
     </div>
 

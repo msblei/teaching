@@ -31,7 +31,7 @@ async function cached<T>(key: string, live: () => Promise<T>, demo: () => T | un
   }
 }
 
-/** Cache key form of a query: "Rennvelo, Rahmen 56 CM" and "rennvelo rahmen 56cm" share results. */
+/** Cache key form of a query: "Skischuhe, Grösse 42" and "skischuhe grösse 42" share results. */
 export const normalizeQuery = (s: string) =>
   s
     .toLowerCase()

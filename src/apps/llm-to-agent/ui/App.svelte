@@ -2,13 +2,17 @@
   // One chat page that grows into an agent, like a SaaS onboarding:
   //   1. plain chat with a model
   //   2. after UNLOCK_AFTER messages, "Add tools" appears in the composer
-  //   3. after UNLOCK_AFTER messages with tools, mission cards appear
+  //   3. after UNLOCK_AFTER messages with tools, the goal card appears: one
+  //      goal with a checkable end, tracked above the composer while it runs
+  // A photo can be attached to any message at any stage.
   // The header steps jump between stages (useful when presenting).
   import { onMount, tick } from "svelte";
   import { getLang, type Lang, type Text } from "../../../lib/i18n";
   import { getTheme, type Theme } from "../../../lib/theme";
   import { TOOL_NAMES, type ModelInfo, type ModelKey, type ToolName } from "../shared/types";
-  import { runTurn, checkCode, newChat, ApiError, CODE_KEY, type Chat } from "./agent";
+  import { runTurn, checkCode, newChat, ApiError, CODE_KEY, type Chat, type Photo } from "./agent";
+  import { GOAL_STEPS } from "../shared/missions";
+  import GoalTracker from "./GoalTracker.svelte";
   import Header from "./Header.svelte";
   import Messages from "./Messages.svelte";
   import Trace from "./Trace.svelte";
@@ -86,6 +90,10 @@
   let plainTurns = $state(0);
   let toolTurns = $state(0);
   let instructions = $state<{ label: Text; system: string } | null>(null);
+  function clearInstructions() {
+    instructions = null;
+    chat.goal = null;
+  }
 
   // Onboarding: a "level unlocked" moment, then a spotlight on the one
   // element to click next (everything else is dimmed and blocked).
@@ -139,11 +147,18 @@
   const showMissions = $derived(missionsUnlocked && !instructions && !chat.busy);
   const toolChip = $derived(tools.length && !instructions && !chat.busy && toolTurns < S.chipsTools.length ? S.chipsTools[toolTurns] : null);
 
-  async function send(text: string, image?: Start["image"]) {
+  async function send(text: string, image?: Photo) {
     const used = [...tools];
     let ok = false;
     try {
-      ok = await runTurn(chat, { text, image }, { model, modelId: modelInfo?.id ?? model, tools: used, system: instructions?.system });
+      ok = await runTurn(chat, { text, image }, {
+        model,
+        modelId: modelInfo?.id ?? model,
+        tools: used,
+        system: instructions?.system,
+        goal: !!instructions,
+        maxSteps: instructions ? GOAL_STEPS : undefined,
+      });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         try {
@@ -167,11 +182,13 @@
     toolsUnlocked = missionsUnlocked = true;
     pending = null;
     // New instructions start a fresh model context; earlier messages stay visible.
-    chat.items.push({ kind: "divider", label: s.mission.title });
-    chat.trace.push({ kind: "divider", label: s.mission.title });
+    const label = { de: s.label, en: s.label };
+    chat.items.push({ kind: "divider", label });
+    chat.trace.push({ kind: "divider", label });
     chat.messages = [];
-    instructions = { label: s.mission.title, system: s.system };
-    send(s.kickoff, s.image);
+    chat.goal = s.goal;
+    instructions = { label, system: s.system };
+    send(s.kickoff);
   }
 
   function newConversation() {
@@ -200,6 +217,7 @@
       chat.items.map((i) => (i.kind === "tool" ? i.status : i.kind === "assistant" ? i.text.length : i.kind)).join() +
       chat.trace.length +
       chat.busy +
+      (chat.goal?.updates ?? 0) +
       showMissions;
     void sig;
     const switched = view !== shownView;
@@ -216,7 +234,10 @@
 {#snippet composerZone()}
   <div class="flex flex-col gap-2">
     {#if showMissions}
-      <MissionPanel {lang} onstart={startMission} />
+      <MissionPanel {lang} onstart={startMission} onopen={() => tour === "missions" && (tour = null)} />
+    {/if}
+    {#if instructions && chat.goal}
+      <GoalTracker {chat} {lang} />
     {/if}
     {#if toolChip}
       <div class="flex">
@@ -232,8 +253,8 @@
       bind:enabled
       bind:menuOpen
       instructionsLabel={instructions?.label ?? null}
-      onclearinstructions={() => (instructions = null)}
-      onsend={(t) => send(t)}
+      onclearinstructions={clearInstructions}
+      onsend={send}
       onengage={engage}
     />
     <div class="flex justify-end text-sm">
