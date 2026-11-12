@@ -1,5 +1,5 @@
-// Page fetching. tutti.ch and toppreise.ch answer normal requests, so pages
-// are fetched directly with an honest user agent, no scraping service needed.
+// Page fetching. toppreise.ch answers normal requests, so pages are fetched
+// directly with an honest user agent, no scraping service needed.
 
 const TIMEOUT_MS = 9_000;
 

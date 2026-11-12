@@ -1,7 +1,7 @@
 // Shapes shared by the browser and the server endpoints.
 
-export type ToolName = "search_tutti" | "get_listing" | "check_new_price";
-export const TOOL_NAMES: ToolName[] = ["search_tutti", "get_listing", "check_new_price"];
+export type ToolName = "search_ebay" | "get_listing" | "check_new_price";
+export const TOOL_NAMES: ToolName[] = ["search_ebay", "get_listing", "check_new_price"];
 
 /**
  * A tool the harness runs itself (in the browser, no website involved): the
@@ -32,8 +32,8 @@ export type DataSource = "live" | "cache" | "demo";
 
 export type Listing = {
   title: string;
-  price: number; // CHF, 0 = free
-  location?: string; // "8004 Zürich (ZH)"
+  price: number; // CHF, without shipping; 0 = free
+  location?: string; // "88*** (DE)", demo data: "8004 Zürich (ZH)"
   postedAt?: string; // ISO date
   excerpt?: string; // start of the description
   imageUrl?: string;
@@ -56,7 +56,7 @@ export type NewPrice = {
 };
 
 export type ToolResult =
-  | { tool: "search_tutti"; source: DataSource; query: string; listings: Listing[] }
+  | { tool: "search_ebay"; source: DataSource; query: string; listings: Listing[] }
   | { tool: "get_listing"; source: DataSource; listing: ListingDetail }
   | { tool: "check_new_price"; source: DataSource; offers: NewPrice[] };
 

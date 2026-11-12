@@ -1,9 +1,9 @@
 import type { Listing, ListingDetail, NewPrice } from "../../shared/types";
-import { searchUrl } from "../sources/tutti";
+import { ebaySearchUrl as searchUrl } from "../sources/ebay";
 
 // Recorded sample data, used only when the live sites can't be reached, so
 // the demo prompts always work. Results from here are marked "demo" in the
-// UI. Links point at the real tutti search page for the query.
+// UI. Links point at the real eBay search page for the query.
 
 const demo = (query: string, n: number) => `${searchUrl(query)}#demo-${n}`;
 

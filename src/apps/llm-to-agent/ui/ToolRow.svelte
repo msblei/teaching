@@ -38,7 +38,7 @@
     {#if subject}<span class="truncate opacity-70">{subject}</span>{/if}
     {#if item.status === "error"}
       <span class="shrink-0 text-danger">{S.toolError[lang]}</span>
-    {:else if r?.tool === "search_tutti"}
+    {:else if r?.tool === "search_ebay"}
       <span class="shrink-0 opacity-60">· {r.listings.length} {S.results[lang]}</span>
     {/if}
     {#if r?.source === "demo"}
@@ -53,11 +53,14 @@
     <div class="mb-2 ml-6 mt-1 rounded-xl border border-line bg-surface p-3 text-sm">
       {#if item.status === "error"}
         <p>{item.error}</p>
-      {:else if r?.tool === "search_tutti"}
+      {:else if r?.tool === "search_ebay"}
         <ul class="flex flex-col gap-2">
           {#each r.listings as l}
             <li class="flex items-center gap-3">
-              {#if l.imageUrl}<img src={l.imageUrl} alt="" class="h-10 w-10 shrink-0 rounded object-cover" loading="lazy" referrerpolicy="no-referrer" />{/if}
+              {#if l.imageUrl}
+                <!-- Whole picture on white: sellers' photos are often tall and narrow (skis). -->
+                <img src={l.imageUrl} alt="" class="h-12 w-12 shrink-0 rounded bg-white object-contain p-0.5" loading="lazy" referrerpolicy="no-referrer" onerror={(e) => ((e.currentTarget as HTMLImageElement).style.visibility = "hidden")} />
+              {/if}
               <a href={l.url} target="_blank" rel="noopener" class="min-w-0 flex-1 truncate text-strong hover:underline">{l.title}</a>
               <span class="shrink-0 tabular-nums">{chf(l.price)}</span>
             </li>

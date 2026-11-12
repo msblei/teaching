@@ -16,10 +16,10 @@ type ToolDef = {
 };
 
 export const TOOL_DEFS: Record<AgentTool, ToolDef> = {
-  search_tutti: {
-    name: "search_tutti",
+  search_ebay: {
+    name: "search_ebay",
     description:
-      "Search current listings on tutti.ch, the Swiss classifieds marketplace for second-hand items. Returns up to 15 listings with title, price in CHF, location (postcode, town, canton), posting date, the start of the description, and URL. Use short product queries like a person would type them, in German, since tutti is a Swiss German-language site (e.g. 'Skischuhe 42', not 'ski boots').",
+      "Search current second-hand listings on eBay (ebay.ch). Returns up to 15 used, fixed-price listings with title, price in CHF, the seller's country, posting date, condition, and URL. The price is the item price as shown on the listing page; shipping is not included. Sellers are mostly in Germany and France. Use short product queries like a person would type them, in German (e.g. 'Skischuhe 42', not 'ski boots'). One-word queries return a lot of unrelated items, so be specific.",
     input_schema: {
       type: "object",
       properties: {
@@ -33,11 +33,11 @@ export const TOOL_DEFS: Record<AgentTool, ToolDef> = {
   get_listing: {
     name: "get_listing",
     description:
-      "Get the full details of one tutti.ch listing: full description, seller name and since when the seller is a member, location. Use it to judge condition or spot scam signs before recommending a listing.",
+      "Get the full details of one eBay listing: full description, condition, seller name with rating, location. Use it to judge condition or check details such as the size before recommending a listing.",
     input_schema: {
       type: "object",
       properties: {
-        url: { type: "string", description: "The listing URL returned by search_tutti" },
+        url: { type: "string", description: "The listing URL returned by search_ebay" },
       },
       required: ["url"],
       additionalProperties: false,
@@ -60,7 +60,7 @@ export const TOOL_DEFS: Record<AgentTool, ToolDef> = {
   track_goal: {
     name: "track_goal",
     description:
-      "Report your progress on the user's goal to the harness. Call it after every round of searching and whenever your selection changes. Always send the complete current list: one entry per item the user needs, with the tutti listing you currently pick for it, or found=false while you have none. The harness checks every URL against your tool results, adds up the real prices itself and answers with what is still open and how much budget is left. If one listing covers several items (a set), give the same URL for each of them; it is counted once.",
+      "Report your progress on the user's goal to the harness. Call it after every round of searching and whenever your selection changes. Always send the complete current list: one entry per item the user needs, with the eBay listing you currently pick for it, or found=false while you have none. The harness checks every URL against your tool results, adds up the real prices itself and answers with what is still open and how much budget is left. If one listing covers several items (a set), give the same URL for each of them; it is counted once.",
     input_schema: {
       type: "object",
       properties: {
@@ -73,7 +73,7 @@ export const TOOL_DEFS: Record<AgentTool, ToolDef> = {
             properties: {
               name: { type: "string", description: "Short name of the item in the user's language, e.g. 'Helm'" },
               found: { type: "boolean", description: "true if you picked a listing for it" },
-              url: { type: "string", description: "URL of the picked listing, exactly as returned by search_tutti" },
+              url: { type: "string", description: "URL of the picked listing, exactly as returned by search_ebay" },
             },
             required: ["name", "found"],
           },
@@ -89,16 +89,16 @@ export const TOOL_DEFS: Record<AgentTool, ToolDef> = {
 export type IconName = "search" | "file" | "tag";
 
 export const TOOL_LABELS: Record<ToolName, { label: Text; desc: Text; running: Text; done: Text; icon: IconName }> = {
-  search_tutti: {
-    label: { de: "tutti-Suche", en: "tutti search" },
-    desc: { de: "Aktuelle Inserate auf tutti.ch", en: "Current listings on tutti.ch" },
-    running: { de: "Durchsucht tutti", en: "Searching tutti" },
-    done: { de: "tutti durchsucht", en: "Searched tutti" },
+  search_ebay: {
+    label: { de: "eBay-Suche", en: "eBay search" },
+    desc: { de: "Gebrauchte Artikel auf ebay.ch", en: "Second-hand items on ebay.ch" },
+    running: { de: "Durchsucht eBay", en: "Searching eBay" },
+    done: { de: "eBay durchsucht", en: "Searched eBay" },
     icon: "search",
   },
   get_listing: {
     label: { de: "Inserat lesen", en: "Read listing" },
-    desc: { de: "Beschreibung und Verkäufer auf tutti.ch", en: "Description and seller on tutti.ch" },
+    desc: { de: "Beschreibung und Verkäufer auf eBay", en: "Description and seller on eBay" },
     running: { de: "Liest Inserat", en: "Reading listing" },
     done: { de: "Inserat gelesen", en: "Read listing" },
     icon: "file",

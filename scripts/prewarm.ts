@@ -1,6 +1,6 @@
 // Fills the shared tool cache right before a workshop, so the first wave of
-// participants gets instant answers. Optional with tutti.ch (which handles
-// parallel requests fine), but it also catches a blocked server early.
+// participants gets instant answers. It also shows early whether eBay and
+// toppreise.ch answer from the server.
 //
 //   node scripts/prewarm.ts https://teaching.mariusbleif.com <workshop-code>
 //
@@ -38,7 +38,7 @@ async function pool<T>(items: T[], fn: (x: T) => Promise<unknown>) {
 
 const urls: string[] = [];
 await pool(SEARCHES, async (query) => {
-  const r = await tool("search_tutti", { query });
+  const r = await tool("search_ebay", { query });
   for (const l of r?.listings?.slice(0, LISTINGS_PER_SEARCH) ?? []) if (!urls.includes(l.url)) urls.push(l.url);
 });
 await pool(urls, (url) => tool("get_listing", { url }));

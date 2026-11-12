@@ -1,10 +1,13 @@
 import type { DataSource, ToolName, ToolResult } from "../shared/types";
 import { cacheGet, cacheSet, freshMs } from "./cache";
-import { searchTutti, getTuttiListing, searchUrl } from "./sources/tutti";
+import { ebayItemId, ebaySearchUrl, getEbayListing, searchEbay } from "./sources/ebay";
+import { SourceUnavailable } from "./sources/fetch";
 import { checkNewPrice, toppreiseUrl } from "./sources/toppreise";
 import { demoSearch, demoListing, demoPrice } from "./fixtures/demo";
 
 // Runs one tool call. Order: fresh cache, live fetch, stale cache, demo data.
+// Second-hand listings come from eBay's official API (needs keys, see
+// sources/ebay.ts); without keys the search runs on demo data.
 // A room of 10 people mostly asks the same things, so results are shared
 // through the cache and identical requests that run at the same time are
 // combined into one fetch. The workshop never stalls on a slow site.
@@ -40,6 +43,11 @@ export const normalizeQuery = (s: string) =>
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
 
+async function readListing(url: string) {
+  if (!ebayItemId(url)) throw new SourceUnavailable("not an eBay listing URL");
+  return getEbayListing(url);
+}
+
 function requireString(input: Record<string, unknown>, field: string): string {
   const v = input[field];
   if (typeof v !== "string" || !v.trim() || v.length > 300) throw new Error(`"${field}" must be a non-empty string`);
@@ -52,19 +60,19 @@ export type ToolRun = { result: ToolResult; url: string; ms: number };
 export async function runTool(name: ToolName, input: Record<string, unknown>): Promise<ToolRun> {
   const t0 = Date.now();
   switch (name) {
-    case "search_tutti": {
+    case "search_ebay": {
       const query = requireString(input, "query");
       const maxPrice = typeof input.max_price === "number" && input.max_price > 0 ? input.max_price : undefined;
       const { value, source } = await cached(
         `search:${normalizeQuery(query)}:${maxPrice ?? ""}`,
-        () => searchTutti(query, maxPrice),
+        () => searchEbay(query, maxPrice),
         () => demoSearch(query, maxPrice),
       );
-      return { result: { tool: name, source, query, listings: value }, url: searchUrl(query), ms: Date.now() - t0 };
+      return { result: { tool: name, source, query, listings: value }, url: ebaySearchUrl(query), ms: Date.now() - t0 };
     }
     case "get_listing": {
       const url = requireString(input, "url");
-      const { value, source } = await cached(`listing:${url}`, () => getTuttiListing(url), () => demoListing(url));
+      const { value, source } = await cached(`listing:${url}`, () => readListing(url), () => demoListing(url));
       return { result: { tool: name, source, listing: value }, url, ms: Date.now() - t0 };
     }
     case "check_new_price": {

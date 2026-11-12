@@ -47,7 +47,7 @@ Netlify so removing the key really switches the apps off.
 ### From LLM to Agent (`/llm-to-agent`)
 
 20 minutes, three stages in one chat page: a plain model, then tools
-(tutti.ch search, listing details, new price on toppreise.ch), then a goal.
+(eBay search, listing details, new price on toppreise.ch), then a goal.
 The browser runs the agent loop one step per request, so participants can
 watch model, tool, model happen.
 
@@ -69,11 +69,15 @@ watch model, tool, model happen.
 - "Under the hood" (header switch) shows the same conversation as a sequence
   diagram: Model | App | Tools, with every request, answer and tool call.
 
-**Data sources.** tutti.ch and toppreise.ch are read directly from their
-normal pages, with an honest user agent (`teaching.mariusbleif.com workshop app`).
-tutti's robots.txt allows search (`/de/q/`) and listing pages (`/de/vi/`); its
-`/api/` is off limits and not used. Tested 2026-11-07: 10 parallel searches in
-0.3 to 0.5 s each. Results are cached and shared by everyone
+**Data sources.** Second-hand listings come from eBay's official Browse API
+(`EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` from a Production keyset on
+developer.ebay.com): used, fixed-price items on ebay.ch from any country that
+(item price without shipping; see the note on buyer location in
+`server/sources/ebay.ts`). Without keys the search runs
+on demo data. tutti.ch was the source until 2026-11-11, when it started
+answering every automated request with a bot challenge. toppreise.ch is read
+directly from its normal pages, with an honest user agent
+(`teaching.mariusbleif.com workshop app`). Results are cached and shared by everyone
 (`CACHE_MINUTES`, default 30), identical requests at the same moment are
 combined, and if a site is unreachable the app serves stale cache, then demo
 data (marked "demo data").

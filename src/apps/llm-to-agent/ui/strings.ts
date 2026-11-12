@@ -71,7 +71,7 @@ export const S = {
   laneApp: { de: "Harness", en: "Harness" },
   laneAppSub: { de: "führt den Loop aus", en: "runs the loop" },
   laneTools: { de: "Werkzeuge", en: "Tools" },
-  laneToolsSub: { de: "tutti.ch, toppreise.ch", en: "tutti.ch, toppreise.ch" },
+  laneToolsSub: { de: "ebay.ch, toppreise.ch", en: "ebay.ch, toppreise.ch" },
   harnessChecks: { de: "Harness prüft selbst", en: "Harness checks itself" },
   traceEmpty: { de: "Schreib eine Nachricht und schau zu, was dabei passiert.", en: "Send a message and watch what happens." },
   you: { de: "Du", en: "You" },
@@ -107,12 +107,12 @@ export const S = {
 
   /** Shown on the empty chat (model only). */
   chipsModel: [
-    { de: "Was kosten gebrauchte Ski gerade auf tutti?", en: "What do used skis cost on tutti right now?" },
+    { de: "Was kosten gebrauchte Ski gerade auf eBay?", en: "What do used skis cost on eBay right now?" },
     { de: "Erkläre mir in zwei Sätzen, was du bist.", en: "Explain in two sentences what you are." },
   ],
   /** Shown one after the other once tools are on. */
   chipsTools: [
-    { de: "Was kosten gebrauchte Ski gerade auf tutti?", en: "What do used skis cost on tutti right now?" },
+    { de: "Was kosten gebrauchte Ski gerade auf eBay?", en: "What do used skis cost on eBay right now?" },
     { de: "Ist das günstigste Paar davon ein guter Deal?", en: "Is the cheapest pair a good deal?" },
   ],
 } satisfies Record<string, Text | Text[]>;

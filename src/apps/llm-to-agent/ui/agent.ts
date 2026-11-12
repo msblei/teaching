@@ -125,7 +125,7 @@ function forModel(r: ToolResult): string {
 }
 
 function summarize(r: ToolResult): Text {
-  if (r.tool === "search_tutti") return { de: `${r.listings.length} Inserate`, en: `${r.listings.length} listings` };
+  if (r.tool === "search_ebay") return { de: `${r.listings.length} Inserate`, en: `${r.listings.length} listings` };
   if (r.tool === "check_new_price") return { de: `${r.offers.length} Neupreise`, en: `${r.offers.length} new prices` };
   return { de: r.listing.title, en: r.listing.title };
 }
@@ -163,15 +163,15 @@ function rawRequest(modelId: string, system: string | undefined, messages: ChatM
 
 // ---- The goal tool: answered by the harness itself, no website involved ----
 
-/** Listing id at the end of a tutti URL, so different spellings of one link match. */
-const listingKey = (url: string) => url.trim().match(/\/vi\/(?:[^?#]*\/)?(\d+)\/?(?:[?#].*)?$/)?.[1] ?? url.trim();
+/** Item number at the end of an eBay URL, so different spellings of one link match. */
+const listingKey = (url: string) => url.trim().match(/\/itm\/(?:[^?#]*\/)?(\d+)\/?(?:[?#].*)?$/)?.[1] ?? url.trim();
 
 /** Every listing a tool has really returned in this chat. */
 function knownListings(chat: Chat): Map<string, Listing> {
   const known = new Map<string, Listing>();
   for (const i of chat.items) {
     if (i.kind !== "tool" || !i.result) continue;
-    if (i.result.tool === "search_tutti") for (const l of i.result.listings) known.set(listingKey(l.url), l);
+    if (i.result.tool === "search_ebay") for (const l of i.result.listings) known.set(listingKey(l.url), l);
     else if (i.result.tool === "get_listing") known.set(listingKey(i.result.listing.url), i.result.listing);
   }
   return known;
@@ -201,7 +201,7 @@ function checkGoal(chat: Chat, input: Record<string, unknown>): string {
   });
 
   // A set that covers several items is paid for once.
-  const total = [...new Map(items.filter((i) => i.found).map((i) => [i.url, i.price ?? 0])).values()].reduce((a, b) => a + b, 0);
+  const total = Math.round([...new Map(items.filter((i) => i.found).map((i) => [i.url, i.price ?? 0])).values()].reduce((a, b) => a + b, 0) * 100) / 100;
   const open = items.filter((i) => !i.found);
   const reached = !open.length && total <= budget;
   const note = typeof input.note === "string" ? input.note.trim().slice(0, 200) : undefined;

@@ -1,8 +1,8 @@
 <script lang="ts">
   // One chat page that grows into an agent, like a SaaS onboarding:
   //   1. plain chat with a model
-  //   2. after UNLOCK_AFTER messages, "Add tools" appears in the composer
-  //   3. after UNLOCK_AFTER messages with tools, the goal card appears: one
+  //   2. after TOOLS_AFTER message(s), "Add tools" appears in the composer
+  //   3. after GOAL_AFTER messages with tools, the goal card appears: one
   //      goal with a checkable end, tracked above the composer while it runs
   // A photo can be attached to any message at any stage.
   // The header steps jump between stages (useful when presenting).
@@ -24,7 +24,8 @@
   import { S } from "./strings";
   import { FOOTER_CLASS, FOOTER_LINK_CLASS, SITE_URL, copyright } from "../../../lib/site";
 
-  const UNLOCK_AFTER = 2;
+  const TOOLS_AFTER = 1;
+  const GOAL_AFTER = 2;
 
   // Language and theme follow <html data-lang / data-theme>.
   let lang = $state<Lang>(getLang());
@@ -78,7 +79,7 @@
   }
 
   // Conversation and onboarding state
-  const noTools = (): Record<ToolName, boolean> => ({ search_tutti: false, get_listing: false, check_new_price: false });
+  const noTools = (): Record<ToolName, boolean> => ({ search_ebay: false, get_listing: false, check_new_price: false });
 
   let chat = $state<Chat>(newChat());
   let model = $state<ModelKey>("claude");
@@ -171,9 +172,9 @@
     // Only answered messages count towards the next level.
     if (!ok) return;
     if (!used.length) {
-      if (++plainTurns >= UNLOCK_AFTER && !toolsUnlocked) earn(2);
+      if (++plainTurns >= TOOLS_AFTER && !toolsUnlocked) earn(2);
     } else if (!instructions) {
-      if (++toolTurns >= UNLOCK_AFTER && !missionsUnlocked) earn(3);
+      if (++toolTurns >= GOAL_AFTER && !missionsUnlocked) earn(3);
     }
   }
 

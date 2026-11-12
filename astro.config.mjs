@@ -20,6 +20,10 @@ export default defineConfig({
       LLM_TO_AGENT_CLAUDE_MODEL: envField.string({ context: "server", access: "secret", optional: true }),
       LLM_TO_AGENT_GPT_MODEL: envField.string({ context: "server", access: "secret", optional: true }),
       CACHE_MINUTES: envField.string({ context: "server", access: "secret", optional: true }),
+      EBAY_CLIENT_ID: envField.string({ context: "server", access: "secret", optional: true }),
+      EBAY_CLIENT_SECRET: envField.string({ context: "server", access: "secret", optional: true }),
+      EBAY_BUYER_LOCATION: envField.string({ context: "server", access: "secret", optional: true }),
+      EBAY_MARKETPLACE: envField.string({ context: "server", access: "secret", optional: true }),
     },
   },
 });
