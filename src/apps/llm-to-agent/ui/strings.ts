@@ -17,6 +17,7 @@ export const S = {
 
   addTools: { de: "Werkzeuge hinzufügen", en: "Add tools" },
   results: { de: "Treffer", en: "results" },
+  nothingFound: { de: "nichts gefunden", en: "nothing found" },
   demoData: { de: "Beispieldaten", en: "demo data" },
   toolError: { de: "fehlgeschlagen", en: "failed" },
   memberSince: { de: "Mitglied seit", en: "member since" },
@@ -83,6 +84,8 @@ export const S = {
   showRequest: { de: "Ganze Anfrage anzeigen", en: "Show full request" },
   hideRequest: { de: "Anfrage ausblenden", en: "Hide request" },
   response: { de: "Antwort", en: "Response" },
+  tokensIn: { de: "Tokens rein", en: "tokens in" },
+  tokensOut: { de: "raus", en: "out" },
   waiting: { de: "Wartet auf das Modell", en: "Waiting for the model" },
   wantsTool: { de: "Das Modell möchte ein Werkzeug benutzen", en: "The model wants to use a tool" },
   finalAnswer: { de: "Antwort an dich", en: "Answer for you" },

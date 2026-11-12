@@ -15,6 +15,7 @@
   const toggle = (k: string) => (open[k] = !open[k]);
 
   const kb = (b: number) => (b < 1024 ? `${b} B` : `${(b / 1024).toFixed(1)} KB`);
+  const num = (n: number) => n.toLocaleString("de-CH");
   const sec = (ms?: number) => (ms === undefined ? "" : `${(ms / 1000).toFixed(1)} s`);
   const role = (r: TraceMsg["role"]) => (r === "system" ? S.roleSystem : r === "user" ? S.roleUser : r === "assistant" ? S.roleAssistant : S.roleTool)[lang];
   const source = (s?: string) => (s === "live" ? S.sourceLive : s === "cache" ? S.sourceCache : s === "demo" ? S.sourceDemo : null);
@@ -126,7 +127,7 @@
       {:else if e.kind === "response"}
         <div class="grid grid-cols-3">
           <div class="col-span-3 sm:col-span-2 sm:col-start-1">
-            {@render arrow("right", e.streaming ? S.waiting[lang] : `${S.response[lang]} #${e.n} · ${sec(e.ms)}`)}
+            {@render arrow("right", e.streaming ? S.waiting[lang] : `${S.response[lang]} #${e.n} · ${sec(e.ms)}${e.tokens ? ` · ${num(e.tokens.in)} ${S.tokensIn[lang]}, ${num(e.tokens.out)} ${S.tokensOut[lang]}` : ""}`)}
             <div class={`rounded-xl border p-3 text-sm ${e.final ? "border-accent/50 bg-surface" : "border-line bg-surface"}`}>
               {#if e.streaming && !e.text}
                 <p class="flex items-center gap-2 opacity-60"><span class="dot"></span>{S.waiting[lang]}</p>

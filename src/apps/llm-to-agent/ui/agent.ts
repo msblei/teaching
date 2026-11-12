@@ -35,7 +35,7 @@ export type TraceMsg = { role: "system" | "user" | "assistant" | "tool"; preview
 export type TraceEvent =
   | { kind: "user"; text: string; image: boolean }
   | { kind: "request"; n: number; model: string; tools: AgentTool[]; messages: TraceMsg[]; bytes: number; raw: string }
-  | { kind: "response"; n: number; ms?: number; text: string; calls: { id: string; name: string; args: string }[]; final: boolean; streaming: boolean }
+  | { kind: "response"; n: number; ms?: number; tokens?: { in: number; out: number }; text: string; calls: { id: string; name: string; args: string }[]; final: boolean; streaming: boolean }
   | { kind: "tool-call"; id: string; name: string; args: string; url?: string }
   | { kind: "tool-result"; id: string; name: string; ms: number; source?: string; summary: Text; raw: string; error?: string }
   | { kind: "divider"; label: Text }
@@ -92,7 +92,7 @@ export type Photo = { data: string; mediaType: "image/jpeg" };
 type Assistant = Extract<ChatMessage, { role: "assistant" }>;
 
 /** One streamed model step. Calls `ontext` for each piece of the answer. */
-async function streamStep(body: unknown, ontext: (delta: string) => void, ontool: (name: string) => void): Promise<{ message: Assistant; finish: string }> {
+async function streamStep(body: unknown, ontext: (delta: string) => void, ontool: (name: string) => void): Promise<{ message: Assistant; finish: string; usage?: { in: number; out: number } }> {
   const res = await fetch("/api/llm-to-agent/model", { method: "POST", headers: headers(), body: JSON.stringify(body) });
   if (!res.ok || !res.body) {
     const json = await res.json().catch(() => ({}));
@@ -112,7 +112,7 @@ async function streamStep(body: unknown, ontext: (delta: string) => void, ontool
       const ev = JSON.parse(line.slice(5));
       if (ev.type === "text") ontext(ev.delta);
       else if (ev.type === "tool") ontool(ev.name);
-      else if (ev.type === "done") return { message: ev.message, finish: ev.finish };
+      else if (ev.type === "done") return { message: ev.message, finish: ev.finish, usage: ev.usage };
       else if (ev.type === "error") throw new ApiError(ev.error, ev.error === "busy" ? 429 : 502);
     }
   }
@@ -354,7 +354,7 @@ export async function runTurn(
       const t0 = performance.now();
 
       let answer: Extract<Item, { kind: "assistant" }> | undefined;
-      const { message, finish } = await streamStep(
+      const { message, finish, usage } = await streamStep(
         { model: opts.model, messages: chat.messages, tools, system, final },
         (delta) => {
           if (!answer) {
@@ -370,6 +370,7 @@ export async function runTurn(
       chat.messages.push(message);
       const calls = message.tool_calls ?? [];
       resp.ms = Math.round(performance.now() - t0);
+      resp.tokens = usage;
       resp.calls = calls.map((c) => ({ id: c.id, name: c.function.name, args: c.function.arguments }));
       resp.final = !calls.length;
       resp.streaming = false;

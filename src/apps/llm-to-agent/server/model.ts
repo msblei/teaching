@@ -12,11 +12,14 @@ const CONNECT_TIMEOUT_MS = 20_000;
 
 type Assistant = Extract<ChatMessage, { role: "assistant" }>;
 
+/** Tokens one model request used, as the provider counts them. */
+export type Usage = { in: number; out: number };
+
 /** Events sent to the browser as server-sent events. */
 export type StepEvent =
   | { type: "text"; delta: string }
   | { type: "tool"; index: number; name: string }
-  | { type: "done"; message: Assistant; finish: string; model: string }
+  | { type: "done"; message: Assistant; finish: string; model: string; usage?: Usage }
   | { type: "error"; error: string };
 
 export class ModelError extends Error {
@@ -60,6 +63,8 @@ export function requestBody(params: StepParams) {
     model: env.modelId(params.model),
     max_tokens: 8000,
     stream: true,
+    // Token counts arrive in the last chunk of the stream.
+    usage: { include: true },
     // Low effort keeps each step fast enough to watch live; these are
     // shopping searches, not hard reasoning.
     reasoning: { effort: "low" },
@@ -136,6 +141,7 @@ export async function openStep(params: StepParams) {
     let buf = "";
     let content = "";
     let finish = "stop";
+    let usage: Usage | undefined;
     const calls: ToolCall[] = [];
     const reasoning: Record<string, unknown>[] = [];
 
@@ -160,6 +166,7 @@ export async function openStep(params: StepParams) {
           yield { type: "error", error: chunk.error.code === 429 ? "busy" : "upstream" };
           return;
         }
+        if (typeof chunk.usage?.prompt_tokens === "number") usage = { in: chunk.usage.prompt_tokens, out: Number(chunk.usage.completion_tokens) || 0 };
         const choice = chunk.choices?.[0];
         if (!choice) continue;
         const d = choice.delta ?? {};
@@ -188,6 +195,7 @@ export async function openStep(params: StepParams) {
       type: "done",
       finish,
       model: modelId,
+      usage,
       message: {
         role: "assistant",
         content: content || null,

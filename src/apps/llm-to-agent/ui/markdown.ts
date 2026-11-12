@@ -93,7 +93,10 @@ function block(md: string): string {
       i = next;
       continue;
     }
-    const para: string[] = [];
+    // The first line is always taken: a table row without its separator line
+    // (as happens while a table is still streaming in) is not a table yet and
+    // would otherwise never be consumed.
+    const para: string[] = [inline(lines[i++])];
     while (i < lines.length && lines[i].trim() && !listRe.test(lines[i]) && !/^#{1,4}\s/.test(lines[i]) && !isRow(lines[i])) para.push(inline(lines[i++]));
     out.push(`<p>${para.join("<br>")}</p>`);
   }

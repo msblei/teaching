@@ -21,6 +21,9 @@
           ? r.listing.title
           : "",
   );
+  // Nothing to open when a search or price check came back empty.
+  const empty = $derived(r?.tool === "search_ebay" ? !r.listings.length : r?.tool === "check_new_price" ? !r.offers.length : false);
+  const canOpen = $derived(item.status === "error" ? !!item.error : item.status !== "running" && !empty);
   const chf = (n: number) => `CHF ${n.toLocaleString("de-CH")}`;
 </script>
 
@@ -28,8 +31,8 @@
   <button
     type="button"
     onclick={() => (open = !open)}
-    disabled={item.status === "running"}
-    class="group flex max-w-full items-center gap-2 rounded-lg py-1 pr-2 text-left opacity-80 transition hover:opacity-100"
+    disabled={!canOpen}
+    class="group flex max-w-full items-center gap-2 rounded-lg py-1 pr-2 text-left opacity-80 transition enabled:hover:opacity-100"
   >
     <Icon name={meta.icon} size={16} class="shrink-0" />
     <span class={`shrink-0 ${item.status === "running" ? "shimmer" : ""}`}>
@@ -38,18 +41,20 @@
     {#if subject}<span class="truncate opacity-70">{subject}</span>{/if}
     {#if item.status === "error"}
       <span class="shrink-0 text-danger">{S.toolError[lang]}</span>
+    {:else if empty}
+      <span class="shrink-0 opacity-60">· {S.nothingFound[lang]}</span>
     {:else if r?.tool === "search_ebay"}
       <span class="shrink-0 opacity-60">· {r.listings.length} {S.results[lang]}</span>
     {/if}
     {#if r?.source === "demo"}
       <span class="shrink-0 rounded border border-line px-1.5 text-xs opacity-70">{S.demoData[lang]}</span>
     {/if}
-    {#if item.status !== "running"}
+    {#if canOpen}
       <Icon name="chevron-right" size={14} class={`shrink-0 opacity-50 transition ${open ? "rotate-90" : ""}`} />
     {/if}
   </button>
 
-  {#if open}
+  {#if open && canOpen}
     <div class="mb-2 ml-6 mt-1 rounded-xl border border-line bg-surface p-3 text-sm">
       {#if item.status === "error"}
         <p>{item.error}</p>
@@ -57,10 +62,6 @@
         <ul class="flex flex-col gap-2">
           {#each r.listings as l}
             <li class="flex items-center gap-3">
-              {#if l.imageUrl}
-                <!-- Whole picture on white: sellers' photos are often tall and narrow (skis). -->
-                <img src={l.imageUrl} alt="" class="h-12 w-12 shrink-0 rounded bg-white object-contain p-0.5" loading="lazy" referrerpolicy="no-referrer" onerror={(e) => ((e.currentTarget as HTMLImageElement).style.visibility = "hidden")} />
-              {/if}
               <a href={l.url} target="_blank" rel="noopener" class="min-w-0 flex-1 truncate text-strong hover:underline">{l.title}</a>
               <span class="shrink-0 tabular-nums">{chf(l.price)}</span>
             </li>

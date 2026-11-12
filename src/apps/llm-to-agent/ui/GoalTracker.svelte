@@ -13,7 +13,8 @@
   const goal = $derived(chat.goal!);
   const found = $derived(goal.items.filter((i) => i.found).length);
   const over = $derived(goal.total > goal.budget);
-  const share = $derived(goal.budget ? Math.min(100, (goal.total / goal.budget) * 100) : 0);
+  // The bar is the way to the goal: full when every item is found.
+  const share = $derived(goal.items.length ? (found / goal.items.length) * 100 : 0);
   const chf = (n: number) => `CHF ${n.toLocaleString("de-CH")}`;
   const status = $derived(goal.reached ? "reached" : chat.busy || !chat.step ? "working" : "missed");
 </script>
@@ -34,7 +35,7 @@
     <Icon name="chevron-right" size={14} class={`shrink-0 opacity-50 transition ${chat.busy && chat.step ? "" : "ml-auto"} ${open ? "rotate-90" : ""}`} />
   </button>
 
-  <!-- Total against the budget -->
+  <!-- Items found; red while the total is over budget -->
   <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
     <div class="h-full rounded-full transition-all duration-500 {over ? 'bg-danger' : 'bg-accent'}" style:width={`${share}%`}></div>
   </div>
