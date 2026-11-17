@@ -319,22 +319,11 @@
 <div class="flex h-dvh flex-col">
   <AppHeader {lang} {theme} />
 
-  {#if gate !== "open"}
-    <main class="flex flex-1 items-center justify-center px-4">
-      {#if gate === "off"}
-        <p class="text-center text-xl opacity-70">{S.codeOff[lang]}</p>
-      {:else if gate === "code"}
-        <form onsubmit={submitCode} class="w-full max-w-sm">
-          <label for="code" class="mb-3 block text-center text-2xl text-strong">{S.codeTitle[lang]}</label>
-          <div class="flex gap-2 rounded-full border border-line bg-surface p-1.5 focus-within:border-accent/50">
-            <input id="code" bind:value={codeInput} autocomplete="off" autocapitalize="off" class="min-w-0 flex-1 bg-transparent px-3 text-strong outline-none" />
-            <button type="submit" class="rounded-full bg-accent px-4 py-1.5 text-accent-fg">{S.codeGo[lang]}</button>
-          </div>
-          {#if codeWrong}<p class="mt-2 text-center text-sm text-danger">{S.codeWrong[lang]}</p>{/if}
-        </form>
-      {/if}
-    </main>
+  {#if gate === "checking"}
+    <main class="flex-1"></main>
   {:else}
+    <!-- The shop is on screen whatever the gate says. While the gate is closed it is out of reach behind the code dialog. -->
+    <div class="contents" inert={gate !== "open"}>
     {#if me}
       <ChallengeBar
         {lang}
@@ -485,8 +474,28 @@
         oncopy={() => {}}
       />
     {/if}
+    </div>
   {/if}
 </div>
+
+{#if gate === "code" || gate === "off"}
+  <!-- Closed gate: the shop stays in view behind it, as behind the name prompt. -->
+  <div class="fixed inset-0 z-[55] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={S.codeTitle[lang]}>
+    {#if gate === "off"}
+      <p class="w-full max-w-sm rounded-3xl border border-line bg-bg p-6 text-center text-xl text-strong shadow-2xl">{S.codeOff[lang]}</p>
+    {:else}
+      <form onsubmit={submitCode} class="w-full max-w-sm rounded-3xl border border-line bg-bg p-6 shadow-2xl">
+        <label for="code" class="block text-2xl text-strong">{S.codeTitle[lang]}</label>
+        <div class="mt-4 flex gap-2 rounded-full border border-line bg-surface p-1.5 focus-within:border-accent/50">
+          <!-- svelte-ignore a11y_autofocus -->
+          <input id="code" bind:value={codeInput} autofocus autocomplete="off" autocapitalize="off" class="min-w-0 flex-1 bg-transparent px-3 text-strong outline-none" />
+          <button type="submit" class="rounded-full bg-accent px-4 py-1.5 text-accent-fg">{S.codeGo[lang]}</button>
+        </div>
+        {#if codeWrong}<p class="mt-2 text-sm text-danger">{S.codeWrong[lang]}</p>{/if}
+      </form>
+    {/if}
+  </div>
+{/if}
 
 {#if gate === "open"}
   {#if !me}

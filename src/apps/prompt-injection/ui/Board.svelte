@@ -40,6 +40,8 @@
       if (gate !== "open") return;
       if (candidate) saveCode(candidate);
       await refresh();
+      // Only the admin endpoints answer whoever is logged in on /admin; the cookie itself is out of the page's reach.
+      getWinning(1).then(() => (admin = true)).catch(() => {});
       timer = setInterval(() => document.visibilityState === "visible" && refresh(), 3000);
     })();
     return () => {
@@ -53,6 +55,8 @@
   let openLevel = $state<Level | null>(null);
   let prompts = $state<Winning[] | null>(null);
   let needAdmin = $state(false);
+  /** Logged in on /admin in this browser: only then is the reset button shown. */
+  let admin = $state(false);
   async function toggle(l: Level) {
     needAdmin = false;
     if (openLevel === l) return void (openLevel = null);
@@ -143,9 +147,11 @@
           {#if needAdmin}<p class="text-sm text-danger">{S.boardAdmin[lang]}</p>{/if}
         </section>
 
+        {#if admin}
         <button type="button" onclick={clear} onblur={() => (sure = false)} class={`self-end rounded-full border px-3 py-1.5 text-sm transition ${sure ? "border-danger text-danger" : "border-line opacity-60 hover:opacity-100"}`}>
           {sure ? S.boardResetSure[lang] : S.boardReset[lang]}
         </button>
+        {/if}
       </div>
     {/if}
   </main>
