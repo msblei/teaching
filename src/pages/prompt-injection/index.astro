@@ -1,0 +1,12 @@
+---
+import Base from "../../layouts/Base.astro";
+import App from "../../apps/prompt-injection/ui/App.svelte";
+---
+
+<Base
+  title="Prompt Injection | Marius Bleif"
+  description="A 20-minute workshop: break the AI features of a second-hand shop in five levels and see why prompt injection is hard to fix."
+  app
+>
+  <App client:only="svelte" />
+</Base>

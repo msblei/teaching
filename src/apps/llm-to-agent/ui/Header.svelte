@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Lang } from "../../../lib/i18n";
-  import { setTheme, type Theme } from "../../../lib/theme";
-  import Icon from "./Icon.svelte";
-  import LangPicker from "./LangPicker.svelte";
-  import { HEADER_CLASS, BRAND_CLASS, ICON_BTN_CLASS } from "../../../lib/site";
+  import type { Theme } from "../../../lib/theme";
+  import Icon from "../../../components/app/Icon.svelte";
+  import AppHeader from "../../../components/app/AppHeader.svelte";
+  import { ICON_BTN_CLASS } from "../../../lib/site";
   import { S } from "./strings";
 
   let {
@@ -31,16 +31,7 @@
   const steps = [S.model, S.tools, S.instructions];
 </script>
 
-<!-- The site-wide header, same as on every other page. -->
-<header class={HEADER_CLASS}>
-  <a href="/" class={BRAND_CLASS}>teaching</a>
-  <div class="ml-auto flex items-center gap-1">
-    <LangPicker {lang} />
-    <button type="button" onclick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={S.theme[lang]} title={S.theme[lang]} class={ICON_BTN_CLASS}>
-      <Icon name={theme === "dark" ? "sun" : "moon"} size={19} />
-    </button>
-  </div>
-</header>
+<AppHeader {lang} {theme} />
 
 <!-- The app's own toolbar, below the site header. -->
 <div inert={locked} aria-disabled={locked} class={`grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pb-2 transition-opacity ${locked ? "pointer-events-none select-none opacity-30" : ""}`}>

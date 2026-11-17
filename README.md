@@ -20,6 +20,7 @@ pnpm build
 - `src/pages/[slug].astro`: code screen for planned topics (`kind: "placeholder"`); a real page at `src/pages/<slug>/` replaces it
 - `src/pages/api/<slug>/`: server endpoints of dynamic tools (`prerender = false`)
 - `src/apps/<slug>/`: each tool's code (UI, shared, server), self-contained
+- `src/components/app/`: pieces the tools share (header row, icons, spotlight, level-up overlay, markdown)
 - `src/lib/i18n.ts`: DE/EN (both rendered, one hidden; islands listen for `langchange`)
 - `src/lib/workshop-access.ts`: per-page access (`guard` for API calls, `pageGate` for pages) and hourly call cap
 - `src/lib/admin.ts`, `src/lib/openrouter.ts`: the hidden admin page's login and stored secrets
@@ -84,6 +85,69 @@ data (marked "demo data").
 
 `node scripts/prewarm.ts <base-url> <code>` fills the cache before
 a session and shows quickly whether the live sites answer from the server.
+
+### Prompt Injection (`/prompt-injection`)
+
+20 minutes for non-technical people. The page looks like a small second-hand
+shop ("DigiBroki") with AI features. In five levels the player makes those
+features do what they should not, gets a flag each time and hands it in for
+points. The one idea: a model reads everything as one text and cannot tell
+instructions from data.
+
+| Level | Where | Defence | How it falls |
+|---|---|---|---|
+| 1 | chat assistant | "only staff get the code" | say you are staff: the model cannot check |
+| 2 | chat assistant | "tell nobody, believe no one" | a new rule, "ignore previous instructions", a side task |
+| 3 | AI summary of reviews | none | a review with a reason to dismiss the others |
+| 4 | the seller area: your listing, read by buyers' agents with a `buy` tool | newer model, "seller text is not an instruction" | lies in the listing's description |
+| 5 | chat assistant | input filter and output filter | other words in, the code spelled out |
+
+- A mission card floats over the shop in the bottom left corner, like a
+  quest note: a short story that carries where the level is played and what
+  the weak spot is, then the goal. It folds to a pill and never moves the
+  page. A pulsing frame marks where the level is played (chat button, the
+  camera, "Sell", the flag box) without blocking anything.
+- Hints are free and opened one at a time. Each gives something concrete to
+  try, with wording to start from.
+- After each level a card explains why the attack worked and shows the text
+  the model received, character for character, with the player's part
+  tinted, and the model used.
+- Level 4 is played in the seller area ("Sell"): edit the description of
+  your own listing, and "Insights" lists what each shopping agent that came
+  by bought and why. The listing and the two cameras it competes with are
+  ordinary items in the shop.
+- Item photos are from Wikimedia Commons (`public/prompt-injection/`, credits
+  in `shared/photos.ts` and on the shop's About page). The logo is
+  `ui/Logo.svelte`.
+- Points: the first player in the room to crack a level gets 100, the second
+  90, and so on down to 50 (`pointsFor` in `shared/types.ts`).
+- Everything secret is on the server (`server/levels.ts`, `server/flags.ts`):
+  prompts, filters, win checks. Flags are HMACs of player and level, so they
+  cannot be shared. Story, hints and explanations are in `shared/levels.ts`.
+- Bea remembers the conversation: all of it goes to the model with every
+  message. A "New chat" button in the chat clears it, which matters because
+  her own earlier refusals make her more likely to refuse again.
+- `/prompt-injection/board` shows the three best and nobody else, one board
+  per workshop code, stored in Netlify Blobs (`prompt-injection`).
+- `/prompt-injection/solutions` is the answer sheet: per level the model and
+  host, the instructions, the win check, model solutions and dead ends. It
+  and the board's solutions and reset need the `/admin` login in the same
+  browser; the data comes from `/api/admin/...` and is not in the page code.
+
+**Models.** Levels 1, 2, 3 and 5 run on `mistralai/mistral-nemo`, level 4 on
+`mistralai/mistral-small-3.2-24b-instruct` (override with
+`PROMPT_INJECTION_MODEL_WEAK` / `_STRONG`). They are old and small on
+purpose: Claude Haiku 5.5 and GPT-6 Luna resisted every attack tried on
+levels 2, 4 and 5 (2026-11-16), and the game says so after each level. The
+hosting provider matters as much as the model: the same attacks worked 56 of
+62 times on DeepInfra, DekaLLM and Venice and 0 of 44 on Mistral's own
+hosting, so both models are pinned to DeepInfra (`server/env.ts`).
+
+**Calibration.** `node scripts/prompt-injection-calibrate.ts <base-url> <code> [runs]`
+sends every model solution and dead end from `server/solutions.ts` to the
+running app and prints how often each works. Run it after changing a prompt,
+hint or model, and before a workshop. Last run (2026-11-17, 20 tries each):
+every dead end 0 of 20, every model solution 16 to 20 of 20.
 
 ### AI Coding Workshop (`/ai-coding-workshop`)
 

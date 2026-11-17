@@ -19,8 +19,8 @@
   import ModelPicker from "./ModelPicker.svelte";
   import Composer from "./Composer.svelte";
   import MissionPanel, { type Start } from "./MissionPanel.svelte";
-  import LevelUp from "./LevelUp.svelte";
-  import Spotlight from "./Spotlight.svelte";
+  import LevelUp from "../../../components/app/LevelUp.svelte";
+  import Spotlight from "../../../components/app/Spotlight.svelte";
   import { S } from "./strings";
   import { FOOTER_CLASS, FOOTER_LINK_CLASS, SITE_URL, copyright } from "../../../lib/site";
 
@@ -319,7 +319,14 @@
 </div>
 
 {#if levelUp}
-  <LevelUp level={levelUp} {lang} ondone={levelDone} />
+  <LevelUp
+    icon={levelUp === 2 ? "tools" : "target"}
+    title={(levelUp === 2 ? S.tools : S.instructions)[lang]}
+    sub={(levelUp === 2 ? S.levelToolsSub : S.levelInstrSub)[lang]}
+    label={S.levelUnlocked[lang].replace("{n}", String(levelUp))}
+    {lang}
+    ondone={levelDone}
+  />
 {:else if spot && gate === "open"}
   <Spotlight target={spot.target} hint={spot.hint} {lang} onskip={() => (tour = null)} />
 {/if}

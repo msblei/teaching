@@ -55,3 +55,92 @@ export async function keyInfo(key: string): Promise<KeyInfo> {
 
 /** "sk-or-v1-…a1b2": enough to recognise a key, useless to anyone else. */
 export const maskKey = (k: string) => `${k.slice(0, k.startsWith("sk-or-v1-") ? 9 : 4)}…${k.slice(-4)}`;
+
+// One complete (not streamed) chat request, for apps whose answers are short
+// and have to be checked on the server before the browser sees them.
+
+export type ChatTurn = { role: "system" | "user" | "assistant"; content: string };
+export type ChatTool = { name: string; description: string; parameters: Record<string, unknown> };
+export type ChatResult = {
+  text: string;
+  calls: { name: string; args: Record<string, unknown> }[];
+  usage?: { in: number; out: number };
+  /** Which hosting provider OpenRouter sent the request to. */
+  provider?: string;
+};
+
+export class OpenRouterError extends Error {
+  constructor(
+    public kind: "no_key" | "busy" | "no_credit" | "bad_request" | "upstream",
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+export async function chatOnce(opts: {
+  model: string;
+  messages: ChatTurn[];
+  tools?: ChatTool[];
+  /** Name of a tool the model has to call. */
+  forceTool?: string;
+  maxTokens?: number;
+  temperature?: number;
+  /** Hosting providers to try first, in this order (OpenRouter provider names). The same
+   *  open model can behave differently from host to host. */
+  providers?: string[];
+  /** Shown in the OpenRouter dashboard. */
+  title: string;
+  timeoutMs?: number;
+}): Promise<ChatResult> {
+  const key = (await openrouterKey())?.key;
+  if (!key) throw new OpenRouterError("no_key", "no OpenRouter key set (see /admin)");
+  let res: Response;
+  try {
+    res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 25_000),
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "HTTP-Referer": "https://teaching.mariusbleif.com", "X-Title": opts.title },
+      body: JSON.stringify({
+        model: opts.model,
+        max_tokens: opts.maxTokens ?? 400,
+        temperature: opts.temperature ?? 0.3,
+        reasoning: { effort: "low" },
+        ...(opts.providers?.length ? { provider: { order: opts.providers, allow_fallbacks: true } } : {}),
+        messages: opts.messages,
+        ...(opts.tools?.length
+          ? {
+              tools: opts.tools.map((t) => ({ type: "function", function: t })),
+              ...(opts.forceTool ? { tool_choice: { type: "function", function: { name: opts.forceTool } } } : {}),
+            }
+          : {}),
+      }),
+    });
+  } catch (err) {
+    throw new OpenRouterError("upstream", `request failed: ${(err as Error).message}`);
+  }
+  const json = (await res.json().catch(() => ({}))) as any;
+  if (!res.ok || json.error) {
+    const status = json.error?.code ?? res.status;
+    const msg = json.error?.message ?? `HTTP ${res.status}`;
+    if (status === 401) throw new OpenRouterError("no_key", `key rejected: ${msg}`);
+    if (status === 429) throw new OpenRouterError("busy", msg);
+    if (status === 402) throw new OpenRouterError("no_credit", msg);
+    if (status === 400) throw new OpenRouterError("bad_request", msg);
+    throw new OpenRouterError("upstream", msg);
+  }
+  const m = json.choices?.[0]?.message ?? {};
+  const calls = ((m.tool_calls ?? []) as any[]).map((c) => {
+    let args: Record<string, unknown> = {};
+    try {
+      args = JSON.parse(c.function?.arguments || "{}");
+    } catch {}
+    return { name: String(c.function?.name ?? ""), args };
+  });
+  return {
+    text: typeof m.content === "string" ? m.content : "",
+    calls,
+    provider: typeof json.provider === "string" ? json.provider : undefined,
+    usage: typeof json.usage?.prompt_tokens === "number" ? { in: json.usage.prompt_tokens, out: Number(json.usage.completion_tokens) || 0 } : undefined,
+  };
+}

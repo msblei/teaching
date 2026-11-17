@@ -6,7 +6,7 @@
   import type { Chat, TraceEvent, TraceMsg } from "./agent";
   import { GOAL_TOOL } from "../shared/types";
   import { S } from "./strings";
-  import Icon from "./Icon.svelte";
+  import Icon from "../../../components/app/Icon.svelte";
   import type { Lang } from "../../../lib/i18n";
 
   let { chat, lang, modelLabel }: { chat: Chat; lang: Lang; modelLabel: string } = $props();

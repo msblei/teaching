@@ -48,6 +48,19 @@ html {
   font-family: "Latin Modern Roman", serif;
 }
 
+/* Anything that can be clicked shows the hand. Tailwind 4 leaves buttons
+   with the default arrow, so nothing on the site looked clickable. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+select,
+summary,
+label[for] {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+
 /* Bilingual text: both languages are rendered, the inactive one is hidden.
    <html data-lang> is set before first paint by the script in Base.astro. */
 html[data-lang="de"] [data-l="en"],

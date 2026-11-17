@@ -29,6 +29,12 @@ export const apps: App[] = [
     icon: "/icons/llm-to-agent.svg",
   },
   {
+    slug: "prompt-injection",
+    title: { de: "Prompt Injection", en: "Prompt Injection" },
+    kind: "dynamic",
+    icon: "/icons/prompt-injection.svg",
+  },
+  {
     slug: "ai-coding-workshop",
     title: { de: "AI Coding Workshop", en: "AI Coding Workshop" },
     kind: "static",

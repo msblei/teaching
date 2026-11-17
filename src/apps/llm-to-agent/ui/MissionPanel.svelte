@@ -5,7 +5,7 @@
   import { MISSION, buildInstructions, goalLabel, initialGoal, sentenceParts } from "../shared/missions";
   import type { Goal } from "../shared/types";
   import { S } from "./strings";
-  import Icon from "./Icon.svelte";
+  import Icon from "../../../components/app/Icon.svelte";
   import type { Lang } from "../../../lib/i18n";
 
   export type Start = { label: string; system: string; kickoff: string; goal: Goal };

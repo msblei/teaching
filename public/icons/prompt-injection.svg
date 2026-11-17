@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- A line of text with a foreign piece slipped into it. -->
+  <rect width="1024" height="1024" rx="212" fill="#f6f0e4"/>
+  <g stroke="#23201b" stroke-width="44" stroke-linecap="round" fill="none">
+    <path d="M232 340 H792"/>
+    <path d="M232 512 H384 M640 512 H792"/>
+    <path d="M232 684 H792"/>
+  </g>
+  <rect x="424" y="456" width="176" height="112" rx="40" fill="#ffb860" stroke="#23201b" stroke-width="44"/>
+</svg>

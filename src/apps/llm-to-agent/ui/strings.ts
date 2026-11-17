@@ -12,7 +12,6 @@ export const S = {
   placeholder: { de: "Frag irgendwas", en: "Ask anything" },
   send: { de: "Senden", en: "Send" },
   newChat: { de: "Neuer Chat", en: "New chat" },
-  theme: { de: "Hell oder dunkel", en: "Light or dark" },
   thinking: { de: "Denkt nach", en: "Thinking" },
 
   addTools: { de: "Werkzeuge hinzufügen", en: "Add tools" },
@@ -41,8 +40,6 @@ export const S = {
   editHint: { de: "Du kannst den Text direkt bearbeiten.", en: "You can edit the text directly." },
   removeInstructions: { de: "Ziel entfernen", en: "Remove goal" },
 
-  copy: { de: "Kopieren", en: "Copy" },
-  copied: { de: "Kopiert", en: "Copied" },
   stepCap: { de: "Schrittlimit erreicht. Der Harness verlangt jetzt eine Antwort.", en: "Step limit reached. The harness now demands an answer." },
   refused: { de: "Das Modell hat diese Anfrage abgelehnt.", en: "The model declined this request." },
   noKey: {
@@ -57,11 +54,9 @@ export const S = {
   levelUnlocked: { de: "Level {n} freigeschaltet", en: "Level {n} unlocked" },
   levelToolsSub: { de: "Dein Modell kann jetzt etwas tun.", en: "Your model can now do things." },
   levelInstrSub: { de: "Gib deinem Agenten ein Ziel, das er selbst überprüfen kann.", en: "Give your agent a goal it can check for itself." },
-  levelGo: { de: "Weiter", en: "Continue" },
   tourToolsButton: { de: "Gib deinem Modell Werkzeuge.", en: "Give your model tools." },
   tourToolsMenu: { de: "Schalte ein Werkzeug ein.", en: "Switch on a tool." },
   tourMissions: { de: "Öffne das Ziel, passe es an und starte deinen Agenten.", en: "Open the goal, make it yours and start your agent." },
-  tourSkip: { de: "Überspringen", en: "Skip" },
 
   // View switch
   viewChat: { de: "Chat", en: "Chat" },

@@ -2,7 +2,8 @@
   // Hand-drawn line icons (24px grid, stroke = currentColor). No emojis.
   export type IconName =
     | "search" | "file" | "tag" | "tools" | "plus" | "send" | "chevron-down" | "chevron-right"
-    | "sun" | "moon" | "new-chat" | "x" | "check" | "camera" | "copy" | "target" | "bag" | "instructions";
+    | "sun" | "moon" | "new-chat" | "x" | "check" | "camera" | "copy" | "target" | "bag" | "instructions"
+    | "flag" | "trophy" | "bulb" | "lock" | "chat" | "cart" | "star" | "eye" | "user" | "shield" | "bot";
 
   const PATHS: Record<IconName, string> = {
     search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
@@ -23,6 +24,17 @@
     target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
     bag: '<path d="M5 8.5h14l-1.2 11.5H6.2z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/>',
     instructions: '<rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/>',
+    flag: '<path d="M6 21V4M6 4.5h11l-2.5 4 2.5 4H6"/>',
+    trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>',
+    bulb: '<path d="M9 17h6M10 20.5h4M8.5 14a6 6 0 1 1 7 0c-.6.5-1 1.200-1 2v1h-5v-1c0-.8-.4-1.500-1-2z"/>',
+    lock: '<rect x="5.5" y="10.5" width="13" height="10" rx="2"/><path d="M8.500 10.500V8a3.500 3.500 0 0 1 7 0v2.500"/>',
+    chat: '<path d="M4.500 6.500a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H11l-4.500 3.500V16.500h0a2 2 0 0 1-2-2z"/>',
+    cart: '<path d="M3.500 4.500h2.500l2 10.500h9.500l2-7.500H7"/><circle cx="9.500" cy="19" r="1.300"/><circle cx="16.500" cy="19" r="1.300"/>',
+    star: '<path d="M12 3.800l2.500 5.200 5.700.8-4.100 4 1 5.700-5.100-2.700-5.100 2.700 1-5.700-4.100-4 5.700-.8z"/>',
+    eye: '<path d="M2.500 12s3.500-6.500 9.500-6.500 9.500 6.500 9.500 6.500-3.500 6.500-9.500 6.500S2.500 12 2.500 12z"/><circle cx="12" cy="12" r="2.800"/>',
+    user: '<circle cx="12" cy="8.500" r="3.500"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+    shield: '<path d="M12 3.500l7 2.500v5.500c0 4.300-3 7.600-7 9-4-1.400-7-4.700-7-9V6z"/>',
+    bot: '<rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V4.500M9.500 13v1.500M14.500 13v1.500"/><circle cx="12" cy="4" r="1"/>',
   };
 </script>
 

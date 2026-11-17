@@ -3,8 +3,8 @@
   // (found by its data-tour attribute) and blocks clicks outside it, with a
   // short hint next to it. Follows the element as the layout changes.
   import { onMount } from "svelte";
-  import { S } from "./strings";
-  import type { Lang, Text } from "../../../lib/i18n";
+  import { A } from "./strings";
+  import type { Lang, Text } from "../../lib/i18n";
 
   let { target, hint, lang, onskip }: { target: string; hint: Text; lang: Lang; onskip: () => void } = $props();
 
@@ -69,7 +69,7 @@
       <div class="w-max max-w-sm rounded-2xl bg-accent px-4 py-2.5 text-accent-fg shadow-xl">
         <p>{hint[lang]}</p>
       </div>
-      <button type="button" onclick={onskip} class="text-xs text-white/70 underline-offset-4 hover:text-white hover:underline">{S.tourSkip[lang]}</button>
+      <button type="button" onclick={onskip} class="text-xs text-white/70 underline-offset-4 hover:text-white hover:underline">{A.tourSkip[lang]}</button>
     </div>
   </div>
 {/if}

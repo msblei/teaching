@@ -2,7 +2,7 @@
   // Model switcher under the message box, like the Claude web app: shows
   // the exact model version, opens a menu (upward) with the alternatives.
   import { MODEL_KEYS, MODEL_LABELS, type ModelInfo, type ModelKey } from "../shared/types";
-  import Icon from "./Icon.svelte";
+  import Icon from "../../../components/app/Icon.svelte";
 
   let { model = $bindable(), models, disabled = false }: { model: ModelKey; models: ModelInfo[]; disabled?: boolean } = $props();
   let open = $state(false);

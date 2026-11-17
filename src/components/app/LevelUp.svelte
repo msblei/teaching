@@ -3,14 +3,30 @@
   // particles around the new level's icon, then Continue (or Enter, or
   // after a few seconds) hands over to the spotlight.
   import { onMount } from "svelte";
-  import Icon from "./Icon.svelte";
-  import { S } from "./strings";
-  import type { Lang } from "../../../lib/i18n";
+  import Icon, { type IconName } from "./Icon.svelte";
+  import { A } from "./strings";
+  import type { Lang } from "../../lib/i18n";
 
-  let { level, lang, ondone }: { level: 2 | 3; lang: Lang; ondone: () => void } = $props();
+  let {
+    icon,
+    title,
+    sub,
+    label,
+    lang,
+    ondone,
+    timeout = 4500,
+  }: {
+    icon: IconName;
+    title: string;
+    sub: string;
+    /** Announced to screen readers, e.g. "Level 2 unlocked". */
+    label: string;
+    lang: Lang;
+    ondone: () => void;
+    /** Closes by itself after this many ms; 0 waits for the button. */
+    timeout?: number;
+  } = $props();
 
-  const title = $derived(level === 2 ? S.tools : S.instructions);
-  const sub = $derived(level === 2 ? S.levelToolsSub : S.levelInstrSub);
   const PARTICLES = 14;
 
   let button: HTMLButtonElement | undefined = $state();
@@ -22,14 +38,15 @@
   };
   onMount(() => {
     button?.focus();
-    const t = setTimeout(close, 4500);
+    if (!timeout) return;
+    const t = setTimeout(close, timeout);
     return () => clearTimeout(t);
   });
 </script>
 
 <svelte:window onkeydown={(e) => e.key === "Escape" && close()} />
 
-<div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`${S.levelUnlocked[lang].replace("{n}", String(level))}: ${title[lang]}`}>
+<div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`${label}: ${title}`}>
   <div class="card flex flex-col items-center px-8 text-center">
     <div class="relative flex h-40 w-40 items-center justify-center">
       <span class="ring r1"></span>
@@ -39,12 +56,12 @@
         <span class="spark" style:--a={`${(360 / PARTICLES) * i}deg`} style:--d={`${(i % 3) * 60}ms`}></span>
       {/each}
       <span class="badge relative flex h-20 w-20 items-center justify-center rounded-full bg-accent text-accent-fg">
-        <Icon name={level === 2 ? "tools" : "target"} size={36} />
+        <Icon name={icon} size={36} />
       </span>
     </div>
 
-    <h2 class="rise mt-4 text-5xl text-white" style:--delay="300ms">{title[lang]}</h2>
-    <p class="rise mt-3 text-lg text-white/75" style:--delay="500ms">{sub[lang]}</p>
+    <h2 class="rise mt-4 text-5xl text-white" style:--delay="300ms">{title}</h2>
+    <p class="rise mt-3 text-lg text-white/75" style:--delay="500ms">{sub}</p>
     <button
       bind:this={button}
       type="button"
@@ -52,7 +69,7 @@
       class="rise mt-8 rounded-full bg-accent px-6 py-2.5 text-accent-fg outline-none transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-white/60"
       style:--delay="700ms"
     >
-      {S.levelGo[lang]}
+      {A.levelGo[lang]}
     </button>
   </div>
 </div>

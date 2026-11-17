@@ -4,7 +4,7 @@
   import type { Item } from "./agent";
   import { TOOL_LABELS } from "../shared/tools";
   import { S } from "./strings";
-  import Icon from "./Icon.svelte";
+  import Icon from "../../../components/app/Icon.svelte";
   import type { Lang } from "../../../lib/i18n";
 
   let { item, lang }: { item: Extract<Item, { kind: "tool" }>; lang: Lang } = $props();

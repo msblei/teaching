@@ -6,7 +6,7 @@
   import { TOOL_LABELS } from "../shared/tools";
   import type { Text, Lang } from "../../../lib/i18n";
   import { S } from "./strings";
-  import Icon from "./Icon.svelte";
+  import Icon from "../../../components/app/Icon.svelte";
   import { prepareImage, type Photo } from "./agent";
 
   let {

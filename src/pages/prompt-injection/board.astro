@@ -1,0 +1,8 @@
+---
+import Base from "../../layouts/Base.astro";
+import Board from "../../apps/prompt-injection/ui/Board.svelte";
+---
+
+<Base title="Leaderboard | Prompt Injection" description="Leaderboard of the prompt injection workshop." app noindex>
+  <Board client:only="svelte" />
+</Base>

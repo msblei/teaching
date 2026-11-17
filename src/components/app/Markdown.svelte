@@ -1,8 +1,8 @@
 <script lang="ts">
   import { renderMarkdown } from "./markdown";
-  import { S } from "./strings";
+  import { A } from "./strings";
   import Icon from "./Icon.svelte";
-  import type { Lang } from "../../../lib/i18n";
+  import type { Lang } from "../../lib/i18n";
 
   let { text, lang }: { text: string; lang: Lang } = $props();
   const parts = $derived(renderMarkdown(text));
@@ -26,7 +26,7 @@
         <div class="flex items-center justify-end border-b border-line px-2 py-1">
           <button type="button" onclick={() => copy(i, part.text)} class="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm hover:bg-surface-2 hover:text-strong">
             <Icon name={copied === i ? "check" : "copy"} size={15} />
-            {copied === i ? S.copied[lang] : S.copy[lang]}
+            {copied === i ? A.copied[lang] : A.copy[lang]}
           </button>
         </div>
         <pre class="whitespace-pre-wrap p-4 font-sans text-[0.95rem] leading-relaxed text-strong">{part.text}</pre>

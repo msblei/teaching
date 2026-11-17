@@ -1,6 +1,6 @@
 <script lang="ts">
   // Language dropdown for the header, same style as the model picker.
-  import { setLang, type Lang } from "../../../lib/i18n";
+  import { setLang, type Lang } from "../../lib/i18n";
   import Icon from "./Icon.svelte";
 
   let { lang }: { lang: Lang } = $props();

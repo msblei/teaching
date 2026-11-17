@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Chat } from "./agent";
   import { MODEL_LABELS } from "../shared/types";
-  import Markdown from "./Markdown.svelte";
+  import Markdown from "../../../components/app/Markdown.svelte";
   import ToolRow from "./ToolRow.svelte";
-  import Icon from "./Icon.svelte";
+  import Icon from "../../../components/app/Icon.svelte";
   import { S } from "./strings";
   import type { Lang } from "../../../lib/i18n";
 
