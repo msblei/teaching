@@ -83,6 +83,8 @@
   }
 
   const playHref = `/prompt-injection${savedCode() ? `?code=${encodeURIComponent(savedCode())}` : ""}`;
+  /** What the room types into the browser, so it is spelled out rather than taken from location. */
+  const PLAY_URL = "teaching.mariusbleif.com/prompt-injection";
 </script>
 
 <div class="flex h-dvh flex-col">
@@ -92,9 +94,14 @@
       <p class="mt-24 text-center text-xl opacity-70">{gate === "off" ? S.codeOff[lang] : S.codeWrong[lang]}</p>
     {:else if board}
       <div class="mx-auto flex max-w-[900px] flex-col gap-8 pb-10 pt-6">
+        <a href={playHref} class="flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 rounded-3xl border border-line bg-surface px-5 py-4 text-center">
+          <span class="text-sm uppercase tracking-wide opacity-60">{S.boardJoin[lang]}</span>
+          <span class="break-all font-mono text-2xl text-strong sm:text-3xl">{PLAY_URL}</span>
+        </a>
+
         <div class="flex flex-wrap items-end justify-between gap-3">
           <h1 class="flex items-center gap-3 text-4xl text-strong"><Icon name="trophy" size={34} class="text-accent" />{S.boardTitle[lang]}</h1>
-          <p class="opacity-70"><span class="tabular-nums">{board.players}</span> {S.boardPlayers[lang]}, <a href={playHref} class="underline-offset-4 hover:underline">{S.boardJoin[lang]}</a></p>
+          <p class="opacity-70"><span class="tabular-nums">{board.players}</span> {S.boardPlayers[lang]}</p>
         </div>
 
         {#if !board.top.length}
