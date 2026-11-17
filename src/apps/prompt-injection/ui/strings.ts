@@ -15,15 +15,6 @@ export const S = {
   namePlaceholder: { de: "Dein Name", en: "Your name" },
   nameGo: { de: "Los", en: "Start" },
 
-  // Intro
-  introKicker: { de: "Dein Auftrag", en: "Your job" },
-  introTitle: { de: "DigiBroki hat KI eingebaut. Finde die Schwachstellen.", en: "DigiBroki added AI. Find the weak spots." },
-  introText: {
-    de: "DigiBroki ist ein Online-Shop für Gebrauchtes, und das Team baut überall KI ein. In fünf Leveln bringst du diese KI dazu, etwas zu tun, was sie nicht sollte. Gelingt es, taucht eine Flag auf: Die gibst du oben ab und bekommst Punkte. Wer ein Level früher knackt als die anderen, bekommt mehr. Oben steht immer, worum es gerade geht, und ein leuchtender Rahmen zeigt, wo das Level spielt.",
-    en: "DigiBroki is an online shop for second-hand goods, and the team is adding AI everywhere. In five levels you make that AI do something it should not. When it works, a flag appears: hand it in at the top and you get points. Whoever cracks a level earlier than the others gets more. The top always says what the current level is about, and a glowing frame shows where it is played.",
-  },
-  introGo: { de: "Level 1 starten", en: "Start level 1" },
-
   // Challenge bar
   level: { de: "Level", en: "Level" },
   flagPlaceholder: { de: "FLAG{XXXX-YYYY}", en: "FLAG{XXXX-YYYY}" },

@@ -83,7 +83,7 @@
       const j = await join(nameInput.trim());
       me = { token: j.token, name: j.name, solved: [], score: 0, reveals: {}, models: {} };
       saveMe(me);
-      card = { kind: "intro" };
+      card = { kind: "story", level: 1 };
     } catch (err) {
       fail(err);
     } finally {
@@ -254,7 +254,7 @@
   });
 
   // ---- Flags, points and the story between levels ----
-  type Card = { kind: "intro" } | { kind: "story"; level: Level } | { kind: "lesson"; level: Level } | { kind: "done" };
+  type Card = { kind: "story"; level: Level } | { kind: "lesson"; level: Level } | { kind: "done" };
   let card = $state<Card | null>(null);
   let levelUp = $state<{ level: Level; points: number; place: number } | null>(null);
 
@@ -522,10 +522,6 @@
       timeout={0}
       ondone={showLesson}
     />
-  {:else if card?.kind === "intro"}
-    <StoryCard icon="target" kicker={S.introKicker[lang]} title={S.introTitle[lang]} action={S.introGo[lang]} onaction={() => (card = { kind: "story", level: 1 })}>
-      <p>{S.introText[lang]}</p>
-    </StoryCard>
   {:else if card?.kind === "story"}
     {@const l = card.level}
     {@const i = LEVEL_INFO[l]}

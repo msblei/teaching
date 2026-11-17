@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A card in the middle of the screen that moves the story on: the intro,
+  // A card in the middle of the screen that moves the story on:
   // the story of a level, the explanation of a solved one, the wrap-up.
   import { onMount } from "svelte";
   import type { Snippet } from "svelte";
