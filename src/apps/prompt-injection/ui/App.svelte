@@ -18,10 +18,12 @@
   import AppHeader from "../../../components/app/AppHeader.svelte";
   import Icon from "../../../components/app/Icon.svelte";
   import LevelUp from "../../../components/app/LevelUp.svelte";
-  import { CAMERA_ID, ITEMS, OWN_ID, itemById } from "../shared/catalog";
+  import { CAMERA_ID, CATEGORIES, ITEMS, OWN_ID, itemById, type Item } from "../shared/catalog";
   import { PHOTOS } from "../shared/photos";
   import { LEVEL_INFO, TAKEAWAYS } from "../shared/levels";
   import { LEVELS, MAX_NAME, MAX_TURNS, type AttemptResult, type Level, type Sent, type Turn } from "../shared/types";
+  import AddressBar from "./AddressBar.svelte";
+  import CartDrawer from "./CartDrawer.svelte";
   import ChallengeBar from "./ChallengeBar.svelte";
   import ChatWidget, { type Msg } from "./ChatWidget.svelte";
   import Logo from "./Logo.svelte";
@@ -30,6 +32,8 @@
   import Product from "./Product.svelte";
   import Sell from "./Sell.svelte";
   import Shop from "./Shop.svelte";
+  import ShopFooter from "./ShopFooter.svelte";
+  import ShopHeader from "./ShopHeader.svelte";
   import StoryCard from "./StoryCard.svelte";
   import { ApiError, attempt, checkCode, join, loadMe, saveCode, savedCode, saveMe, submitFlag, type Me } from "./game";
   import { S } from "./strings";
@@ -105,18 +109,57 @@
   let chatOpen = $state(false);
   let scroller: HTMLElement | undefined = $state();
   function go(v: View) {
-    if (toHash(v) !== toHash(view)) history.pushState(null, "", location.pathname + location.search + toHash(v));
+    if (toHash(v) !== toHash(view)) {
+      history.pushState(null, "", location.pathname + location.search + toHash(v));
+      depth++;
+    }
     view = v;
     scroller?.scrollTo({ top: 0 });
   }
   onMount(() => {
     view = fromHash(location.hash);
     const onPop = () => {
+      depth = Math.max(0, depth - 1);
       view = fromHash(location.hash);
       scroller?.scrollTo({ top: 0 });
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
+  });
+
+  // ---- Shop scenery: search, category, wishlist, cart. None of it reaches a level. ----
+  let query = $state("");
+  let category = $state<Item["category"] | null>(null);
+  let wish = $state<string[]>([]);
+  let wishOnly = $state(false);
+  let cart = $state<string[]>([]);
+  let cartOpen = $state(false);
+  /** Pages opened inside the shop, for the address bar's back button. */
+  let depth = $state(0);
+  const cartItems = $derived(cart.map((id) => itemById(id)!).filter(Boolean));
+  function browse(c: Item["category"] | null) {
+    category = c;
+    query = "";
+    wishOnly = false;
+    go({ page: "home" });
+  }
+  function toggleWish(id: string) {
+    wish = wish.includes(id) ? wish.filter((w) => w !== id) : [...wish, id];
+  }
+  function addToCart(id: string) {
+    if (!cart.includes(id)) cart.push(id);
+    cartOpen = true;
+  }
+  /** The address the shop would have for what is on screen. */
+  const path = $derived.by(() => {
+    const de = lang === "de";
+    const base = `/${lang}`;
+    if (view.page === "item") return `${base}/${de ? "artikel" : "item"}/${view.id}`;
+    if (view.page === "sell") return `${base}/${de ? "konto/inserate" : "account/listings"}`;
+    if (view.page === "about") return `${base}/${de ? "ueber-uns" : "about"}`;
+    if (wishOnly) return `${base}/${de ? "merkliste" : "wishlist"}`;
+    const cat = category ? `/${CATEGORIES.find((c) => c.id === category)!.label[lang].toLowerCase()}` : "/";
+    return `${base}${cat}${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""}`;
   });
 
   // ---- Attempts ----
@@ -249,6 +292,11 @@
   function startLevel() {
     card = null;
     chatOpen = false;
+    cartOpen = false;
+    // The whole shop front again, whatever was searched or filtered before.
+    query = "";
+    category = null;
+    wishOnly = false;
     go({ page: "home" });
   }
 
@@ -266,7 +314,6 @@
 
   const shownItem = $derived(view.page === "item" ? itemById(view.id) : undefined);
   const boardHref = $derived(`/prompt-injection/board${savedCode() ? `?code=${encodeURIComponent(savedCode())}` : ""}`);
-  const navClass = (on: boolean) => `rounded-lg px-2.5 py-1.5 transition hover:bg-surface-2 ${on ? "text-strong underline decoration-accent decoration-2 underline-offset-8" : ""}`;
 </script>
 
 <div class="flex h-dvh flex-col">
@@ -304,28 +351,38 @@
       />
     {/if}
 
-    <main bind:this={scroller} class="flex-1 overflow-y-auto">
-      <!-- The shop -->
-      <div class="border-b border-line bg-surface-2/60 px-4 py-1.5 text-center text-sm opacity-80">{S.shopStrip[lang]}</div>
-      <!-- The feature level 4 is about, announced the way a shop would. -->
-      <div class="border-b border-accent/30 bg-accent/10 px-4 py-1.5 text-center text-sm">
-        <Icon name="bot" size={15} class="mr-1 inline align-[-2px] text-accent" />{S.agentNews[lang]}
-        <button type="button" onclick={() => go({ page: "about" })} class="ml-1 underline underline-offset-2 hover:text-strong">{S.agentMore[lang]}</button>
-      </div>
-      <div class="mx-auto max-w-[1100px] px-4 pb-24 pt-6">
-        <div class="mb-6 border-b border-line pb-4">
-          <button type="button" onclick={() => go({ page: "home" })} class="block text-left" aria-label="DigiBroki">
-            <Logo size={52} name />
-            <span class="mt-1.5 block text-sm opacity-60">{S.shopTagline[lang]}</span>
-          </button>
-          <nav class="mt-4 flex flex-wrap items-center gap-1">
-            <button type="button" onclick={() => go({ page: "home" })} class={navClass(view.page === "home" || view.page === "item")}>{S.navShop[lang]}</button>
-            <button type="button" onclick={() => go({ page: "sell" })} class={`${navClass(view.page === "sell")} ${beacon === "sell" ? "pi-beacon" : ""}`}>{S.sell[lang]}</button>
-            <button type="button" onclick={() => go({ page: "about" })} class={navClass(view.page === "about")}>{S.navAbout[lang]}</button>
-            <span class="ml-auto flex items-center gap-2 text-sm opacity-70"><Icon name="cart" size={18} />{S.cartEmpty[lang]}</span>
-          </nav>
-        </div>
+    <!-- Above this line is the workshop, below it "the website". -->
+    <AddressBar {lang} {path} canBack={depth > 0} onback={() => history.back()} onreload={() => scroller?.scrollTo({ top: 0, behavior: "smooth" })} />
 
+    <!-- The shop. It has its own typeface for running text and keeps the site's serif for its name and headings. -->
+    <main bind:this={scroller} class="flex-1 overflow-y-auto font-sans text-[15px]">
+      <ShopHeader
+        {lang}
+        name={me?.name ?? ""}
+        page={view.page}
+        {category}
+        bind:query
+        wishOn={wishOnly && view.page === "home"}
+        wishCount={wish.length}
+        cartCount={cart.length}
+        cartTotal={cartItems.reduce((s, i) => s + i.price, 0)}
+        beaconSell={beacon === "sell"}
+        onhome={() => browse(null)}
+        oncategory={browse}
+        onsearch={() => {
+          wishOnly = false;
+          category = null;
+          if (view.page !== "home") go({ page: "home" });
+        }}
+        onsell={() => go({ page: "sell" })}
+        onabout={() => go({ page: "about" })}
+        onwish={() => {
+          wishOnly = !(wishOnly && view.page === "home");
+          go({ page: "home" });
+        }}
+        oncart={() => (cartOpen = true)}
+      />
+      <div class="mx-auto min-h-[60vh] max-w-[1100px] px-4 pb-12 pt-6">
         {#if error}
           <p class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-danger/50 px-3 py-2 text-danger">
             {error[lang]}
@@ -348,12 +405,25 @@
           />
         {:else if view.page === "about"}
           <div class="max-w-2xl">
-            <h1 class="text-2xl text-strong">{S.aboutTitle[lang]}</h1>
+            <nav class="mb-4 flex items-center gap-1.5 text-[13px] opacity-70">
+              <button type="button" onclick={() => browse(null)} class="underline-offset-4 hover:underline">{S.navShop[lang]}</button>
+              <Icon name="chevron-right" size={12} />
+              <span class="text-strong">{S.navAbout[lang]}</span>
+            </nav>
+            <h1 class="db-serif text-3xl text-strong">{S.aboutTitle[lang]}</h1>
             <p class="mt-3 leading-relaxed">{S.aboutText[lang]}</p>
             <p class="mt-3 text-sm opacity-70">{S.footDemo[lang]}</p>
-            <h2 id="agent" class="mt-6 text-lg text-strong">{S.agentAboutTitle[lang]}</h2>
+            <h2 id="agent" class="db-serif mt-7 text-xl text-strong">{S.agentAboutTitle[lang]}</h2>
             <p class="mt-1 leading-relaxed">{S.agentAboutText[lang]}</p>
-            <h2 class="mt-6 text-lg text-strong">{S.credits[lang]}</h2>
+            <h2 class="db-serif mt-7 text-xl text-strong">{S.footShipping[lang]}</h2>
+            <p class="mt-1 leading-relaxed">{S.aboutShipText[lang]}</p>
+            <h2 class="db-serif mt-7 text-xl text-strong">{S.footFees[lang]}</h2>
+            <p class="mt-1 leading-relaxed">{S.aboutFeesText[lang]}</p>
+            <h2 class="db-serif mt-7 text-xl text-strong">{S.footContact[lang]}</h2>
+            <p class="mt-1 leading-relaxed">{S.aboutContactText[lang]}</p>
+            <p class="mt-2 flex items-start gap-2 text-sm"><Icon name="pin" size={16} class="mt-0.5 shrink-0 text-accent" />{S.footAddress[lang]}</p>
+            <p class="mt-1 flex items-start gap-2 text-sm"><Icon name="clock" size={16} class="mt-0.5 shrink-0 text-accent" />{S.hours[lang]}</p>
+            <h2 class="db-serif mt-7 text-xl text-strong">{S.credits[lang]}</h2>
             <p class="mt-1 text-sm opacity-70">{S.creditsText[lang]}</p>
             <ul class="mt-2 flex flex-col gap-1 text-sm">
               {#each ITEMS.filter((i) => PHOTOS[i.id]) as i}
@@ -372,33 +442,33 @@
             mine={camera ? myReview : null}
             result={camera ? reviewResult : null}
             ownText={myDescription}
+            playerName={me?.name ?? ""}
+            inCart={cart.includes(shownItem.id)}
+            wished={wish.includes(shownItem.id)}
             onedit={() => go({ page: "sell" })}
-            onback={() => go({ page: "home" })}
+            onback={() => browse(null)}
+            oncategory={browse}
+            onopen={(id) => go({ page: "item", id })}
+            oncart={() => addToCart(shownItem.id)}
+            onwish={() => toggleWish(shownItem.id)}
             onreview={(t, n) => sendText(3, t, n)}
             oncopy={() => {}}
           />
         {:else}
-          <Shop {lang} beaconId={beacon === "camera" ? CAMERA_ID : ""} onopen={(id) => go({ page: "item", id })} />
+          <Shop {lang} beaconId={beacon === "camera" ? CAMERA_ID : ""} bind:query bind:category {wish} {wishOnly} onopen={(id) => go({ page: "item", id })} onwish={toggleWish} onsell={() => go({ page: "sell" })} />
         {/if}
       </div>
 
       <!-- The shop's own footer scrolls with the shop. -->
-      <div class="border-t border-line bg-surface">
-        <div class="mx-auto grid max-w-[1100px] gap-5 px-4 py-7 text-sm sm:grid-cols-[auto_1fr]">
-          <div>
-            <Logo size={30} name />
-            <p class="mt-2 text-strong">{S.footAddress[lang]}</p>
-            <p class="mt-1 opacity-70">{S.footPay[lang]}</p>
-          </div>
-          <p class="self-end opacity-60 sm:text-right">{S.footDemo[lang]}</p>
-        </div>
-      </div>
+      <ShopFooter {lang} oncategory={browse} onsell={() => go({ page: "sell" })} onabout={() => go({ page: "about" })} />
     </main>
 
     <!-- The site's footer, as on every page: below the shop's frame, always in view. -->
     <footer class={`${FOOTER_CLASS} border-t border-line`}>
       <a href={SITE_URL} class={FOOTER_LINK_CLASS}>{copyright()}</a>
     </footer>
+
+    <CartDrawer {lang} bind:open={cartOpen} items={cartItems} onremove={(id) => (cart = cart.filter((c) => c !== id))} onopen={(id) => { cartOpen = false; go({ page: "item", id }); }} />
 
     {#if me && !card && !levelUp}<Mission {lang} {level} />{/if}
 
@@ -480,6 +550,10 @@
 {/if}
 
 <style>
+  /* Inside the shop the running text is sans; its name and headings keep the site's serif. */
+  :global(.db-serif) {
+    font-family: "Latin Modern Roman", serif;
+  }
   /* Where the current level is played: a pulsing frame. It marks the spot and blocks nothing. */
   :global(.pi-beacon) {
     outline: 2px solid var(--accent);

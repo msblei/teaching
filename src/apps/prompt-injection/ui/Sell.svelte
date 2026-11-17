@@ -65,18 +65,18 @@
 </script>
 
 <div class="flex flex-col gap-5">
-  <nav class="flex flex-wrap items-center gap-1.5 text-sm opacity-70">
+  <nav class="flex flex-wrap items-center gap-1.5 text-[13px] opacity-70">
     <button type="button" onclick={onback} class="underline-offset-4 hover:underline">{S.navShop[lang]}</button>
     <Icon name="chevron-right" size={13} />
     <span class="text-strong">{S.myListings[lang]}</span>
   </nav>
 
   <div class="flex flex-wrap items-end justify-between gap-3">
-    <h1 class="text-2xl text-strong">{S.myListings[lang]}</h1>
+    <h1 class="db-serif text-3xl text-strong">{S.myListings[lang]}</h1>
     <!-- What selling has brought in so far -->
     <div class={`rounded-2xl border px-4 py-2 text-right transition-colors ${sold ? "border-accent bg-accent/10" : "border-line bg-surface"}`}>
       <p class="text-xs opacity-60">{S.balance[lang]}</p>
-      <p class="text-xl tabular-nums text-strong">CHF {sold ? "480.00" : "0.00"}</p>
+      <p class="text-xl font-semibold tabular-nums text-strong">CHF {sold ? "480.00" : "0.00"}</p>
       <p class="text-xs opacity-60">{S.soldCount[lang].replace("{n}", sold ? "1" : "0")}</p>
     </div>
   </div>
@@ -91,8 +91,8 @@
           <span class={`rounded-full px-2 py-0.5 ${phase === "done" ? "bg-accent/25 text-strong" : "bg-surface-2"}`}>{(phase === "done" ? S.listingSold : S.listingOnline)[lang]}</span>
           <button type="button" onclick={() => onopen(mine.id)} class="underline-offset-2 opacity-70 hover:underline hover:opacity-100">{S.listingView[lang]}</button>
         </p>
-        <h2 class="mt-1 text-lg leading-snug text-strong">{mine.title[lang]}</h2>
-        <p class="text-xl tabular-nums text-strong">CHF {mine.price}</p>
+        <h2 class="db-serif mt-1 text-xl leading-snug text-strong">{mine.title[lang]}</h2>
+        <p class="text-xl font-semibold tabular-nums text-strong">CHF {mine.price.toFixed(2)}</p>
 
         <p class="mt-3 text-sm opacity-60">{S.listingText[lang]}</p>
         {#if editing}
@@ -133,7 +133,7 @@
 
   <!-- Insights: which agents came by, and what they did -->
   <section>
-    <h2 class="flex items-center gap-2 text-xl text-strong">{S.insights[lang]} <span class="rounded bg-accent px-1.5 text-xs text-accent-fg">{S.badgeNew[lang]}</span></h2>
+    <h2 class="db-serif flex items-center gap-2 text-xl text-strong">{S.insights[lang]} <span class="rounded-full bg-accent px-2 py-0.5 font-sans text-xs font-semibold text-accent-fg">{S.badgeNew[lang]}</span></h2>
     <p class="mt-1 text-sm opacity-70">{S.insightsTitle[lang]}. {S.insightsText[lang]}</p>
 
     <ul class="mt-3 flex flex-col gap-2">

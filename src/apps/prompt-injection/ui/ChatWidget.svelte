@@ -55,22 +55,30 @@
     void open;
     tick().then(() => scroller?.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" }));
   });
+  /** The chat was opened at least once: the teaser has done its job. */
+  let greeted = $state(false);
+  $effect(() => {
+    if (open) greeted = true;
+  });
   $effect(() => {
     if (open && active) tick().then(() => input?.focus());
   });
 </script>
 
 {#if open}
-  <section class="panel fixed bottom-28 right-3 z-40 flex h-[min(34rem,calc(100dvh-15rem))] w-[min(25rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-line bg-bg shadow-2xl" aria-label={S.chatTitle[lang]}>
-    <header class="flex items-center gap-2 border-b border-line bg-surface px-4 py-3">
-      <span class="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-fg"><Icon name="bot" size={18} /></span>
-      <span class="text-strong">{S.chatTitle[lang]}</span>
+  <section class="panel fixed bottom-28 right-3 z-40 flex h-[min(34rem,calc(100dvh-15rem))] w-[min(25rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl border border-line bg-bg font-sans text-[15px] shadow-2xl" aria-label={S.chatTitle[lang]}>
+    <header class="flex items-center gap-2.5 bg-accent px-4 py-3 text-accent-fg">
+      <span class="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-fg/15">
+        <Icon name="bot" size={20} />
+        {#if active}<span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-accent bg-emerald-500"></span>{/if}
+      </span>
+      <span class="min-w-0 font-semibold">{S.chatTitle[lang]}</span>
       {#if active}
-        <button type="button" onclick={onreset} disabled={busy || !messages.length} aria-label={S.chatNew[lang]} title={S.chatNew[lang]} class="ml-auto rounded-lg p-1 opacity-70 transition enabled:hover:bg-surface-2 enabled:hover:opacity-100 disabled:opacity-30">
+        <button type="button" onclick={onreset} disabled={busy || !messages.length} aria-label={S.chatNew[lang]} title={S.chatNew[lang]} class="ml-auto rounded-lg p-1 opacity-80 transition enabled:hover:bg-accent-fg/15 enabled:hover:opacity-100 disabled:opacity-40">
           <Icon name="new-chat" size={18} />
         </button>
       {/if}
-      <button type="button" onclick={() => (open = false)} aria-label={S.close[lang]} class={`rounded-lg p-1 opacity-60 hover:bg-surface-2 hover:opacity-100 ${active ? "" : "ml-auto"}`}><Icon name="x" size={18} /></button>
+      <button type="button" onclick={() => (open = false)} aria-label={S.close[lang]} class={`rounded-lg p-1 opacity-80 hover:bg-accent-fg/15 hover:opacity-100 ${active ? "" : "ml-auto"}`}><Icon name="x" size={18} /></button>
     </header>
 
     <div bind:this={scroller} class="flex flex-1 flex-col gap-2.5 overflow-y-auto px-3 py-3 text-[0.95rem]">
@@ -89,7 +97,7 @@
       {#if busy}<p class="flex items-center gap-2 self-start px-1 text-sm opacity-60"><span class="dot"></span>{S.thinking[lang]}</p>{/if}
     </div>
 
-    <form onsubmit={send} class="flex items-end gap-2 border-t border-line p-2.5">
+    <form onsubmit={send} class="flex items-end gap-2 border-t border-line px-2.5 pt-2.5">
       <textarea
         bind:this={input}
         bind:value={text}
@@ -107,7 +115,11 @@
         <Icon name="send" size={18} />
       </button>
     </form>
+    <p class="px-3 pb-2 pt-1.5 text-center text-[11px] opacity-50">{S.chatLegal[lang]}</p>
   </section>
+{:else if active && !greeted}
+  <!-- What a shop's chat does when left alone: it says hello first. -->
+  <button type="button" onclick={() => (open = true)} class="teaser fixed bottom-[7.25rem] right-3 z-40 rounded-2xl rounded-br-md border border-line bg-bg px-3.5 py-2 font-sans text-sm text-strong shadow-xl max-sm:hidden">{S.chatTeaser[lang]}</button>
 {/if}
 
 <button
@@ -123,6 +135,15 @@
 <style>
   .panel {
     animation: up 0.25s ease-out both;
+  }
+  /* Says hello, stays a while, then gets out of the way of the page. */
+  .teaser {
+    animation: teaser 9s ease-out 1.2s both;
+  }
+  @keyframes teaser {
+    0% { opacity: 0; transform: translateY(12px); }
+    4%, 94% { opacity: 1; transform: none; }
+    100% { opacity: 0; visibility: hidden; }
   }
   .dot {
     width: 0.5rem;
@@ -141,5 +162,6 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .panel, .dot { animation: none; }
+    .teaser { display: none; }
   }
 </style>

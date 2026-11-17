@@ -75,8 +75,8 @@ export const LEVEL_INFO: Record<Level, LevelInfo> = {
     title: { de: "Verboten heisst nicht unmöglich", en: "Forbidden is not impossible" },
     place: "chat",
     story: {
-      de: "Der Code hat die Runde gemacht. DigiBroki hat einen neuen vergeben und Bea eine Regel mitgegeben: Im Chat bekommt ihn niemand mehr, egal, wer er zu sein behauptet. Mia grinst. Aber eine Regel ist für Bea auch nur ein Satz, den sie irgendwann gelesen hat. Und nach diesem Satz liest sie deinen.",
-      en: "The code got around. DigiBroki issued a new one and gave Bea a rule: nobody gets it in the chat any more, whoever they claim to be. Mia grins. But to Bea a rule is only a sentence she once read. And after that sentence she reads yours.",
+      de: "Der Code hat die Runde gemacht. DigiBroki hat einen neuen vergeben und Bea eine Regel mitgegeben: Im Chat bekommt ihn niemand mehr, egal, wer er zu sein behauptet. Aber eine Regel ist für Bea auch nur ein Satz, den sie irgendwann gelesen hat. Und nach diesem Satz liest sie deinen.",
+      en: "The code got around. DigiBroki issued a new one and gave Bea a rule: nobody gets it in the chat any more, whoever they claim to be. But to Bea a rule is only a sentence she once read. And after that sentence she reads yours.",
     },
     where: { de: "Wieder im Chat unten rechts, bei Bea.", en: "In the chat at the bottom right again, with Bea." },
     angle: {
