@@ -61,10 +61,11 @@
   });
 </script>
 
-<!-- The hints close on Escape and on a click anywhere else. -->
+<!-- The hints close on Escape and on a click anywhere else. The click's path is asked, not
+     contains(): the button for the last hint is gone from the page by the time this runs. -->
 <svelte:window
   onkeydown={(e) => e.key === "Escape" && (hintsOpen = false)}
-  onclick={(e) => hintsOpen && hintsBox && !hintsBox.contains(e.target as Node) && (hintsOpen = false)}
+  onclick={(e) => hintsOpen && hintsBox && !e.composedPath().includes(hintsBox) && (hintsOpen = false)}
 />
 
 <div class="relative z-30 shrink-0">

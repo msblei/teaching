@@ -1,8 +1,8 @@
 <script lang="ts">
   // The leaderboard, for the projector: the three best and nobody else, so
   // it can only ever honour, never shame. Refreshes by itself. Whoever is
-  // logged in on /admin in this browser can also open a level to read the
-  // prompts that cracked it (without names), and clear the board.
+  // logged in on /admin in this browser also gets the address to type in,
+  // the prompts that cracked each level (without names) and the reset button.
   import { onMount } from "svelte";
   import { FOOTER_CLASS, FOOTER_LINK_CLASS, SITE_URL, copyright } from "../../../lib/site";
   import { getLang, type Lang } from "../../../lib/i18n";
@@ -94,14 +94,16 @@
       <p class="mt-24 text-center text-xl opacity-70">{gate === "off" ? S.codeOff[lang] : S.codeWrong[lang]}</p>
     {:else if board}
       <div class="mx-auto flex max-w-[900px] flex-col gap-8 pb-10 pt-6">
+        {#if admin}
         <a href={playHref} class="flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 rounded-3xl border border-line bg-surface px-5 py-4 text-center">
           <span class="text-sm uppercase tracking-wide opacity-60">{S.boardJoin[lang]}</span>
           <span class="break-all font-mono text-2xl text-strong sm:text-3xl">{PLAY_URL}</span>
         </a>
+        {/if}
 
         <div class="flex flex-wrap items-end justify-between gap-3">
           <h1 class="flex items-center gap-3 text-4xl text-strong"><Icon name="trophy" size={34} class="text-accent" />{S.boardTitle[lang]}</h1>
-          <p class="opacity-70"><span class="tabular-nums">{board.players}</span> {S.boardPlayers[lang]}</p>
+          <p class="opacity-70"><span class="tabular-nums">{board.players}</span> {S.boardPlayers[lang]}{#if !admin}, <a href={playHref} class="underline-offset-4 hover:underline">{S.boardJoin[lang]}</a>{/if}</p>
         </div>
 
         {#if !board.top.length}
@@ -121,7 +123,8 @@
           </ol>
         {/if}
 
-        <!-- For the debrief: how many solved each level, and (for the presenter) how -->
+        <!-- For the debrief, presenter only: how many solved each level, and how -->
+        {#if admin}
         <section class="flex flex-col gap-2">
           <h2 class="text-sm uppercase tracking-wide opacity-60">{S.boardSolutions[lang]}</h2>
           {#each LEVELS as l}
@@ -154,7 +157,6 @@
           {#if needAdmin}<p class="text-sm text-danger">{S.boardAdmin[lang]}</p>{/if}
         </section>
 
-        {#if admin}
         <button type="button" onclick={clear} onblur={() => (sure = false)} class={`self-end rounded-full border px-3 py-1.5 text-sm transition ${sure ? "border-danger text-danger" : "border-line opacity-60 hover:opacity-100"}`}>
           {sure ? S.boardResetSure[lang] : S.boardReset[lang]}
         </button>
