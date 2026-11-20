@@ -21,7 +21,8 @@
 <svelte:window onkeydown={(e) => e.key === "Escape" && (open = false)} />
 
 {#if open}
-  <div class="fixed inset-0 z-[45] font-sans text-[15px]">
+  <!-- Above the site header (z-50), like the other dialogs: its language and theme buttons sat on top of the drawer. -->
+  <div class="fixed inset-0 z-[55] font-sans text-[15px]">
     <button type="button" class="shade absolute inset-0 cursor-default bg-black/50" aria-label={S.close[lang]} onclick={() => (open = false)}></button>
     <aside class="drawer absolute inset-y-0 right-0 flex w-[min(26rem,100vw)] flex-col border-l border-line bg-bg shadow-2xl" aria-label={S.cart[lang]}>
       <header class="flex items-center gap-2 border-b border-line px-4 py-3.5">
