@@ -89,7 +89,7 @@ a session and shows quickly whether the live sites answer from the server.
 ### Prompt Injection (`/prompt-injection`)
 
 20 minutes for non-technical people. The page looks like a small second-hand
-shop ("DigiBroki") with AI features. In five levels the player makes those
+shop ("DigiBrocki") with AI features. In five levels the player makes those
 features do what they should not, gets a flag each time and hands it in for
 points. The one idea: a model reads everything as one text and cannot tell
 instructions from data.
@@ -108,7 +108,8 @@ instructions from data.
   page. A pulsing frame marks where the level is played (chat button, the
   camera, "Sell", the flag box) without blocking anything.
 - Hints are free and opened one at a time. Each gives something concrete to
-  try, with wording to start from.
+  try, with wording to start from. The last hint of a level nearly is the
+  solution and opens only after three tries on that level.
 - After each level a card explains why the attack worked and shows the text
   the model received, character for character, with the player's part
   tinted, and the model used.

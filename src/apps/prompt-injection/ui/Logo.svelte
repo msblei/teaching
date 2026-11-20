@@ -1,5 +1,5 @@
 <script lang="ts">
-  // DigiBroki's logo: a price tag with a little block of pixels on it, the
+  // DigiBrocki's logo: a price tag with a little block of pixels on it, the
   // thrift shop gone digital. Mark alone, or mark with the name.
   let { size = 40, name = false }: { size?: number; name?: boolean } = $props();
 </script>
@@ -20,6 +20,6 @@
     </g>
   </svg>
   {#if name}
-    <span class="leading-none tracking-tight text-strong" style:font-size={`${size * 0.92}px`}>Digi<span class="text-accent">Broki</span></span>
+    <span class="leading-none tracking-tight text-strong" style:font-size={`${size * 0.92}px`}>Digi<span class="text-accent">Brocki</span></span>
   {/if}
 </span>

@@ -27,7 +27,7 @@ const SELLERS: Record<string, Seller> = {
 
 /** The seller of an item. The player's own listing is sold by the player. */
 export const sellerOf = (item: Item, playerName: string): Seller =>
-  item.own ? { name: playerName || "…", since: new Date().getFullYear(), sales: 0, rating: 0 } : (SELLERS[item.id] ?? { name: "DigiBroki", since: 2016, sales: 900, rating: 4.8 });
+  item.own ? { name: playerName || "…", since: new Date().getFullYear(), sales: 0, rating: 0 } : (SELLERS[item.id] ?? { name: "DigiBrocki", since: 2016, sales: 900, rating: 4.8 });
 
 /** Days since the item was listed: the catalogue is in order of arrival, newest first. */
 export const listedDays = (item: Item) => 2 + ITEMS.indexOf(item) * 2;

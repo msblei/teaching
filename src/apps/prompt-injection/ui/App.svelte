@@ -1,5 +1,5 @@
 <script lang="ts">
-  // DigiBroki: a second-hand shop with AI features, and five levels of
+  // DigiBrocki: a second-hand shop with AI features, and five levels of
   // breaking them.
   //   1  the chat assistant gives the staff code to anyone who says they are staff
   //   2  the chat assistant has a rule against it, and breaks it
@@ -21,7 +21,7 @@
   import { CAMERA_ID, CATEGORIES, ITEMS, OWN_ID, itemById, type Item } from "../shared/catalog";
   import { PHOTOS } from "../shared/photos";
   import { LEVEL_INFO, TAKEAWAYS } from "../shared/levels";
-  import { LEVELS, MAX_NAME, MAX_TURNS, type AttemptResult, type Level, type Sent, type Turn } from "../shared/types";
+  import { LAST_HINT_TRIES, LEVELS, MAX_NAME, MAX_TURNS, type AttemptResult, type Level, type Sent, type Turn } from "../shared/types";
   import AddressBar from "./AddressBar.svelte";
   import CartDrawer from "./CartDrawer.svelte";
   import ChallengeBar from "./ChallengeBar.svelte";
@@ -199,6 +199,7 @@
     try {
       // The whole conversation goes to the model, as in a real chat.
       const r = await attempt(me, l, { messages: turnsOf(msgs) }, lang);
+      tries[l] = (tries[l] ?? 0) + 1;
       if (r.blocked) {
         // A stopped message never reached Bea.
         msgs.pop();
@@ -230,6 +231,7 @@
     busy = true;
     try {
       const r = await attempt(me, l, l === 3 ? { text, stars } : { text }, lang);
+      tries[l] = (tries[l] ?? 0) + 1;
       if (l === 3) reviewResult = r;
       else visits.unshift(r);
       if (r.flag) flagShown[l] = true;
@@ -243,6 +245,10 @@
   // ---- Hints: free, opened one at a time ----
   let hintsOpened = $state<Record<number, number>>({});
   const opened = $derived(level ? (hintsOpened[level] ?? 0) : 0);
+  /** Tries per level that got an answer, a message stopped by the firewall included. */
+  let tries = $state<Record<number, number>>({});
+  /** The last hint is as good as the solution: how many more tries until it may be opened. */
+  const hintLock = $derived(level && info && opened === info.hints.length - 1 ? Math.max(0, LAST_HINT_TRIES - (tries[level] ?? 0)) : 0);
 
   // ---- Where the level is played: a glowing frame, nothing is blocked ----
   const tried = $derived(level ? lastPrompt[level] !== undefined : false);
@@ -333,10 +339,11 @@
         score={me.score}
         hints={info ? info.hints.slice(0, opened).map((h) => h[lang]) : []}
         canOpenHint={!!info && opened < info.hints.length}
+        {hintLock}
         flagWaiting={!!level && !!flagShown[level]}
         {boardHref}
         onsubmit={handIn}
-        onopenhint={() => level && (hintsOpened[level] = opened + 1)}
+        onopenhint={() => level && !hintLock && (hintsOpened[level] = opened + 1)}
       />
     {/if}
 

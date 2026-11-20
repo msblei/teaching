@@ -84,7 +84,7 @@
         {/each}
       </ul>
       <p class="ml-auto flex flex-wrap gap-x-4 gap-y-1 opacity-70">
-        <span>© {new Date().getFullYear()} DigiBroki</span>
+        <span>© {new Date().getFullYear()} DigiBrocki</span>
         {#each [S.footTerms, S.footPrivacy, S.footImprint] as t}
           <button type="button" onclick={onabout} class="underline-offset-4 hover:underline">{t[lang]}</button>
         {/each}

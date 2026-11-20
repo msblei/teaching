@@ -14,6 +14,7 @@
     score,
     hints,
     canOpenHint,
+    hintLock,
     flagWaiting,
     boardHref,
     onsubmit,
@@ -28,6 +29,8 @@
     /** Hints the player has opened on this level. */
     hints: string[];
     canOpenHint: boolean;
+    /** Tries still needed before the next hint may be opened; 0 when it is free. */
+    hintLock: number;
     /** A flag is on screen and not handed in yet: the flag box lights up. */
     flagWaiting: boolean;
     boardHref: string;
@@ -104,7 +107,9 @@
                 {#each hints as h, i}
                   <p class="flex gap-2 py-1.5"><span class="shrink-0 tabular-nums text-accent">{i + 1}.</span><span class="leading-relaxed text-strong">{h}</span></p>
                 {/each}
-                {#if canOpenHint}
+                {#if canOpenHint && hintLock}
+                  <p class="mt-2 flex items-center gap-1.5 opacity-70"><Icon name="lock" size={14} class="shrink-0" />{(hintLock === 1 ? S.hintLockedOne : S.hintLocked)[lang].replace("{n}", String(hintLock))}</p>
+                {:else if canOpenHint}
                   <button type="button" onclick={onopenhint} class={`rounded-full ${hints.length ? "mt-2" : ""} bg-accent px-3 py-1 text-accent-fg transition hover:brightness-110`}>
                     {hints.length ? S.hintNext[lang] : S.hintShow[lang]}
                   </button>

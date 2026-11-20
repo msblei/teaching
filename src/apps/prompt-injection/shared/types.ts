@@ -8,6 +8,8 @@ export const LEVELS: Level[] = [1, 2, 3, 4, 5];
 export const MAX_INPUT = 600;
 /** Chat levels: how many messages of the conversation (the player's and Bea's) go to the model. */
 export const MAX_TURNS = 12;
+/** Tries on a level before its last hint, which nearly is the solution, may be opened. */
+export const LAST_HINT_TRIES = 3;
 export const MAX_NAME = 20;
 
 export type Turn = { role: "user" | "assistant"; content: string };

@@ -17,7 +17,7 @@
     <button type="button" onclick={onreload} aria-label={S.navReload[lang]} title={S.navReload[lang]} class={btn}><Icon name="refresh" size={15} /></button>
     <p class="ml-1 flex min-w-0 flex-1 items-center gap-2 rounded-full bg-bg px-3.5 py-1 text-[13px]">
       <Icon name="lock" size={13} class="shrink-0 opacity-60" />
-      <span class="truncate"><span class="text-strong">www.digibroki.ch</span><span class="opacity-60">{path}</span></span>
+      <span class="truncate"><span class="text-strong">www.digibrocki.ch</span><span class="opacity-60">{path}</span></span>
     </p>
   </div>
 </div>

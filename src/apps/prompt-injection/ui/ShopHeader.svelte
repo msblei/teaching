@@ -65,7 +65,7 @@
 
 <div class="z-20 border-b border-line bg-bg md:sticky md:top-0">
   <div class="mx-auto flex max-w-[1100px] flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3">
-    <button type="button" onclick={onhome} class="db-serif shrink-0 text-left" aria-label="DigiBroki"><Logo size={34} name /></button>
+    <button type="button" onclick={onhome} class="db-serif shrink-0 text-left" aria-label="DigiBrocki"><Logo size={34} name /></button>
 
     <form
       role="search"
